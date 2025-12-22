@@ -8,7 +8,7 @@ const Response = require('./Response');
 
 class App {
   constructor() {
-    this.routes = [];           // Все зарегистрированные маршруты
+    this.routes = [];           // Все зарегистрированные маршруты (метаданные)
     this.middlewares = [];      // Глобальные middleware
     this.router = new Router(); // Экземпляр роутера
     this.server = null;         // Экземпляр HTTP сервера
@@ -30,23 +30,21 @@ class App {
   put(path, handler) { return this._registerRoute('PUT', path, handler); }
   patch(path, handler) { return this._registerRoute('PATCH', path, handler); }
   delete(path, handler) { return this._registerRoute('DELETE', path, handler); }
-  // alias для удобства
-  del(path, handler) { return this.delete(path, handler); }
+  del(path, handler) { return this.delete(path, handler); } // alias
 
   // Приватный метод регистрации маршрута
   _registerRoute(method, path, handler) {
-    if (typeof handler !== 'function') {
-      throw new TypeError('handler must be a function');
+    if (typeof method !== 'string' || typeof path !== 'string' || typeof handler !== 'function') {
+      throw new TypeError('register(method: string, path: string, handler: function) expected');
     }
     this.router.register(method, path, handler);
-    this.routes.push({ method, path, handler });
+    this.routes.push({ method: method.toUpperCase(), path, handler });
     return this;
   }
 
   // Запуск сервера
   listen(port, callback) {
     this.server = http.createServer(this._handleRequest.bind(this));
-    // Устанавливаем таймаут соединения
     this.server.setTimeout(this.defaultTimeout);
     this.server.listen(port, callback);
     return this;
@@ -72,22 +70,18 @@ class App {
   // Централизованная обработка ошибок
   _handleError(err, request, response) {
     try {
-      // Логируем с контекстом
       const method = request && request.method ? request.method : 'unknown';
       const path = request && request.path ? request.path : (request && request.url) || 'unknown';
       console.error(`Request error: ${method} ${path}`, err);
       if (!response || response.writableEnded || response.finished) return;
-      // Безопасная отправка ответа
       response.status(500).send('Internal Server Error');
     } catch (e) {
-      // Если даже логирование/ответ упало — ничего не делаем
       console.error('Error while handling error:', e);
     }
   }
 
   // Обработчик входящих запросов
   async _handleRequest(req, res) {
-    // Обертываем в наши расширенные объекты
     const request = new Request(req);
     const response = new Response(res);
 
@@ -96,13 +90,16 @@ class App {
       const host = req.headers.host || 'localhost';
       const parsed = new URL(req.url, `http://${host}`);
       request.path = parsed.pathname;
-      // Преобразуем searchParams в объект (плоский)
-      request.query = Object.fromEntries(parsed.searchParams.entries());
-      // Синхронизируем url если нужно
+      // Преобразуем searchParams в объект (плоский или массивы при повторениях)
+      const q = {};
+      for (const key of parsed.searchParams.keys()) {
+        const vals = parsed.searchParams.getAll(key);
+        q[key] = vals.length > 1 ? vals : vals[0];
+      }
+      request.query = q;
       request.url = parsed.pathname + (parsed.search ? parsed.search : '');
     } catch (e) {
-      // Если парсинг упал — продолжаем, router может работать с req.url
-      request.path = req.url;
+      request.path = req.url || '/';
       request.query = request.query || {};
     }
 
@@ -128,9 +125,8 @@ class App {
       request.query = { ...request.query, ...routeMatch.query };
 
       // 4. Выполняем обработчик маршрута
-      // Поддерживаем как async handlers, так и next-style (если handler принимает 3 аргумента)
+      // Поддерживаем next-style handlers и async handlers
       if (routeMatch.handler.length >= 3) {
-        // next-style: (req, res, next)
         await new Promise((resolve, reject) => {
           const next = (err) => {
             if (err) reject(err);
@@ -143,7 +139,6 @@ class App {
           }
         });
       } else {
-        // async/Promise or sync
         await Promise.resolve(routeMatch.handler(request, response));
       }
 
@@ -155,7 +150,6 @@ class App {
   // Выполнение цепочки middleware
   async _runMiddlewares(req, res) {
     for (const middleware of this.middlewares) {
-      // Если ответ уже отправлен — прерываем цепочку
       if (res.writableEnded || res.finished) break;
 
       await new Promise((resolve, reject) => {
@@ -169,29 +163,21 @@ class App {
         try {
           const maybePromise = middleware(req, res, next);
 
-          // Если middleware вернул Promise (async function), ждём его.
           if (maybePromise && typeof maybePromise.then === 'function') {
             maybePromise
               .then(() => {
-                // Если middleware был async и не использовал next, считаем его завершённым
                 if (!nextCalled) resolve();
-                // Если next был вызван внутри async middleware, resolve уже произошёл
               })
               .catch(reject);
           } else {
-            // Если middleware не вернул Promise, ожидаем вызова next
-            // Но на случай, если middleware синхронно завершил ответ без вызова next,
-            // проверяем состояние ответа через небольшой таймаут.
-            // Устанавливаем защиту: если middleware не вызовет next в разумное время, это может зависнуть.
-            // Здесь мы не ставим глобальный таймаут, предполагаем корректность middleware.
-            // Если middleware завершил ответ синхронно, следующий цикл увидит res.writableEnded и прервётся.
+            // Ожидаем вызова next; если middleware синхронно завершил ответ без next,
+            // следующий шаг прервёт цикл по проверке res.writableEnded.
           }
         } catch (err) {
           reject(err);
         }
       });
 
-      // После каждого middleware проверяем, не был ли ответ отправлен
       if (res.writableEnded || res.finished) break;
     }
   }
