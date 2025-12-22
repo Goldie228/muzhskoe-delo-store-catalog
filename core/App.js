@@ -5,6 +5,7 @@ const Router = require('./Router');
 const Request = require('./Request');
 const Response = require('./Response');
 
+
 class App {
   constructor() {
     this.routes = [];           // Все зарегистрированные маршруты
