@@ -44,7 +44,7 @@
 ### Установка и запуск
 ```bash
 # Клонирование репозитория
-git clone <repository-url>
+git clone https://github.com/Goldie228/muzhskoe-delo-store-catalog.git
 cd muzhskoe-delo-store-catalog
 
 # Установка зависимостей
