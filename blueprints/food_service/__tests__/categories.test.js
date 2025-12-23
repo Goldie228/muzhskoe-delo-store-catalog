@@ -6,17 +6,24 @@ const { errorHandler } = require('../../../core/middleware/errorHandler');
 
 describe('API Категорий (Food Service)', () => {
   let app;
+  let server;
 
   beforeAll(() => {
     app = new App();
     app.use(bodyParser());
     app.use(errorHandler());
     require('../routes/categories.routes.js')(app);
+
+    server = app.listen(0);
+  });
+
+  afterAll((done) => {
+    server.close(done);
   });
 
   describe('GET /api/categories', () => {
     test('должен возвращать список категорий', async () => {
-      const response = await request(app)
+      const response = await request(server)
         .get('/api/categories')
         .expect(200);
 
@@ -34,7 +41,7 @@ describe('API Категорий (Food Service)', () => {
         synonyms: ['вода', 'сок']
       };
 
-      const response = await request(app)
+      const response = await request(server)
         .post('/api/categories')
         .send(newCategory)
         .expect(201);
