@@ -95,6 +95,17 @@ class App {
   }
 
   /*
+   * Возвращает адрес сервера (для совместимости с supertest)
+   * @returns {Address} - адрес сервера или null
+   */
+  address() {
+    if (!this.server) {
+      return null;
+    }
+    return this.server.address();
+  }
+
+  /*
    * Централизованная обработка ошибок
    * @param {Error} err - объект ошибки
    * @param {Request} request - объект запроса
@@ -210,8 +221,9 @@ class App {
               })
               .catch(reject);
           } else {
-            // Ожидаем вызова next; если middleware синхронно завершил ответ без next,
-            // следующий шаг прервёт цикл по проверке res.writableEnded.
+            // Middleware завершилась синхронно.
+            // Завершаем промис явно, чтобы цикл продолжил проверку состояния.
+            resolve();
           }
         } catch (err) {
           reject(err);
