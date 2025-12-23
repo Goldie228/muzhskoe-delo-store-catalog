@@ -7,9 +7,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+pnpm-debug.log*
 
-# Файл блокировки версий зависимостей (если решите использовать yarn)
-# yarn.lock
+# Файл блокировки версий зависимостей
+# package-lock.json - рекомендуется коммитьте (npm)
+# yarn.lock - коммитьте, если используете yarn
+# pnpm-lock.yaml - коммитьте, если используете pnpm
+
+# Файл конфигурации Node Version Manager (коммитьте по согласованию команды)
+# .nvmrc
 
 # ---------------------------------
 # :::: Environment Variables / Переменные окружения ::::
@@ -21,23 +27,101 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 
+# Файлы конфигурации с секретами
+.npmrc
+.yarnrc.yml
+.yarnrc
+
+# ---------------------------------
+# :::: Security / Безопасность ::::
+# ---------------------------------
+# Приватные ключи и сертификаты
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Файлы с секретами
+secret.txt
+secrets.txt
+secrets.json
+
+# AWS CLI и другие облачные конфигурации
+.aws/
+.azure/
+.google/
+
 # ---------------------------------
 # :::: Build & Distribution / Сборка и дистрибутивы ::::
 # ---------------------------------
-# Папки, куда собирается финальный проект (если он будет)
+# Папки, куда собирается финальный проект
 dist/
 build/
 out/
+target/
+
+# Сгенерированная документация (например, JSDoc, Sphinx)
+docs/build/
+docs/_build/
+_site/
 
 # ---------------------------------
-# :::: Docker / Докер ::::
+# :::: Testing / Тестирование ::::
 # ---------------------------------
-# Исключаем Docker-файлы, которые генерируются автоматически
-# или содержат локальные настройки.
-Dockerfile.local
-docker-compose.override.yml
-# Можно исключить и основной docker-compose, если он не используется в проде
-# docker-compose.yml
+# Директория для покрытия кода тестами
+coverage/
+*.lcov
+.nyc_output/
+c8-coverage/
+
+# Jest snapshots (иногда коммичат, но обычно игнорируют)
+**/__snapshots__/
+*.snap
+
+# Отчеты о тестировании
+test-results/
+junit.xml
+testem.log
+
+# ---------------------------------
+# :::: Logs & Runtime / Логи и временные файлы ::::
+# ---------------------------------
+# Файлы логов
+logs/
+*.log
+
+# Файлы процессов и PID
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# История REPL Node.js
+.node_repl_history
+
+# ---------------------------------
+# :::: Backup & Temporary Files / Резервные и временные файлы ::::
+# ---------------------------------
+# Файлы резервных копий
+*.bak
+*.backup
+*.old
+*.orig
+
+# Временные файлы
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.#*
+
+# Файлы, создаваемые редакторами при сохранении
+*.save
+*.save.1
+*.save.2
 
 # ---------------------------------
 # :::: IDE & Editors / Редакторы кода ::::
@@ -47,15 +131,21 @@ docker-compose.override.yml
 .vscode/
 !.vscode/extensions.json
 !.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 
 # WebStorm / IntelliJ IDEA
 .idea/
 *.iml
+*.ipr
+*.iws
 
 # Vim / Neovim
 *.swp
 *.swo
 *~
+.*.swp
+.*.swo
 
 # Emacs
 *~
@@ -71,6 +161,14 @@ tramp
 *.sublime-project
 *.sublime-workspace
 
+# Atom
+.atom/
+packages/
+.config/
+
+# Notepad++
+*.npp
+
 # ---------------------------------
 # :::: OS Files / Файлы операционных систем ::::
 # ---------------------------------
@@ -81,6 +179,13 @@ tramp
 .LSOverride
 Icon
 ._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
 # Windows
 Thumbs.db
@@ -89,40 +194,107 @@ ehthumbs.db
 ehthumbs_vista.db
 *.stackdump
 [Dd]esktop.ini
- $RECYCLE.BIN/
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
 
 # Linux
 *~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
 
 # ---------------------------------
-# :::: Logs & Runtime / Логи и временные файлы ::::
+# :::: Docker / Докер ::::
 # ---------------------------------
-# Файлы логов
-logs/
-*.log
-pids/
-*.pid
-*.seed
-*.pid.lock
+# Исключаем Docker-файлы, которые генерируются автоматически
+# или содержат локальные настройки.
+Dockerfile.local
+docker-compose.override.yml
+docker-compose.local.yml
+docker-compose.dev.yml
+docker-compose.prod.yml
 
-# Директория для покрытия кода тестами (coverage)
-coverage/
-*.lcov
-.nyc_output/
+# Можно исключить и основной docker-compose, если он не используется в проде
+# docker-compose.yml
+
+# ---------------------------------
+# :::: Database / Базы данных ::::
+# ---------------------------------
+# Локальные файлы баз данных
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# MongoDB
+data/db/
+
+# Redis
+dump.rdb
+
+# ---------------------------------
+# :::: Cache & Performance / Кэш и производительность ::::
+# ---------------------------------
+# Кэш различных инструментов
+.eslintcache
+.stylelintcache
+.parcel-cache
+.cache/
+.vite/
+.next/
+.nuxt/
+.svelte-kit/
+
+# Webpack
+.webpack/
+.webpack-stats.json
 
 # ---------------------------------
 # :::: Misc / Разное ::::
 # ---------------------------------
-# Папка для временных файлов ESLint
-.eslintcache
-
-# Файл опций для Prettier (если он локальный)
+# Файлы опций для Prettier (если он локальный)
 .prettierignore
 
-# Файлы базы данных (если они локальные)
-*.sqlite
-*.db
+# Файлы конфигурации ESLint (если локальные)
+.eslintrc.local
+
+# Файлы TypeScript
+*.tsbuildinfo
 
 # Временные папки
 tmp/
 temp/
+.tmp/
+
+# Файлы сгенерированные инструментами
+.gatsby-cache/
+.vercel/
+.netlify/
+
+# Профилирование и отладка
+*.cpuprofile
+*.heapprofile
+
+# Локальные скрипты и утилиты
+scripts/local.sh
+scripts/dev.sh
+
+# ---------------------------------
+# :::: Project Specific / Специфичные для проекта ::::
+# ---------------------------------
+# Временные файлы данных для тестов
+blueprints/*/data/test-*.json
+blueprints/*/data/temp-*.json
+
+# Локальная конфигурация сервера
+server.local.js
+config.local.js
+
+# Данные для разработки (если не должны быть в репозитории)
+dev-data/
+sample-data/local/
