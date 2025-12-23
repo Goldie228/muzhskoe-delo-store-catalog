@@ -58,12 +58,15 @@ function bodyParser(options = {}) {
 
 /*
  * Общая функция чтения тела с лимитом и обработкой abort/close
- * @param {IncomingMessage} req - объект запроса
+ * @param {IncomingMessage|Request} req - объект запроса (обертка или нативный)
  * @param {Object} options - опции чтения
  * @param {number} options.limit - максимальный размер тела в байтах
  * @returns {Promise<Buffer>} - промис с телом запроса в виде Buffer
  */
 function _readBody(req, { limit }) {
+  // Извлекаем нативный запрос из обертки
+  const nativeReq = req.raw ? req.raw : req;
+
   return new Promise((resolve, reject) => {
     if (req._bodyParsed) return resolve(null);
 
@@ -73,11 +76,11 @@ function _readBody(req, { limit }) {
     let aborted = false;
 
     function cleanup() {
-      req.removeListener('data', onData);
-      req.removeListener('end', onEnd);
-      req.removeListener('error', onError);
-      req.removeListener('close', onClose);
-      req.removeListener('aborted', onAbort);
+      nativeReq.removeListener('data', onData);
+      nativeReq.removeListener('end', onEnd);
+      nativeReq.removeListener('error', onError);
+      nativeReq.removeListener('close', onClose);
+      nativeReq.removeListener('aborted', onAbort);
     }
 
     function onData(chunk) {
@@ -87,7 +90,7 @@ function _readBody(req, { limit }) {
         aborted = true;
         cleanup();
         // уничтожаем соединение и возвращаем ошибку
-        try { req.destroy(); } catch (e) {}
+        try { nativeReq.destroy(); } catch (e) {}
         return reject(Object.assign(new Error('Размер тела запроса превышает лимит'), { status: 413 }));
       }
       chunks.push(chunk);
@@ -122,17 +125,18 @@ function _readBody(req, { limit }) {
       reject(new Error('Запрос прерван клиентом'));
     }
 
-    req.on('data', onData);
-    req.on('end', onEnd);
-    req.on('error', onError);
-    req.on('close', onClose);
-    req.on('aborted', onAbort);
+    // Вешаем листенеры ТОЛЬКО на нативный запрос
+    nativeReq.on('data', onData);
+    nativeReq.on('end', onEnd);
+    nativeReq.on('error', onError);
+    nativeReq.on('close', onClose);
+    nativeReq.on('aborted', onAbort);
   });
 }
 
 /*
  * Парсинг JSON тела запроса
- * @param {IncomingMessage} req - объект запроса
+ * @param {IncomingMessage|Request} req - объект запроса
  * @param {Object} options - опции парсинга
  * @param {number} options.limit - максимальный размер тела в байтах
  * @param {boolean} options.strict - строгий режим парсинга JSON
@@ -155,7 +159,7 @@ async function _parseJsonBody(req, { limit, strict }) {
 
 /*
  * Парсинг URL-encoded тела запроса
- * @param {IncomingMessage} req - объект запроса
+ * @param {IncomingMessage|Request} req - объект запроса
  * @param {Object} options - опции парсинга
  * @param {number} options.limit - максимальный размер тела в байтах
  * @param {boolean} options.extended - расширенный режим парсинга
@@ -200,7 +204,7 @@ async function _parseUrlencodedBody(req, { limit, extended }) {
 
 /*
  * Парсинг текстового тела запроса
- * @param {IncomingMessage} req - объект запроса
+ * @param {IncomingMessage|Request} req - объект запроса
  * @param {Object} options - опции парсинга
  * @param {number} options.limit - максимальный размер тела в байтах
  */
@@ -212,7 +216,7 @@ async function _parseTextBody(req, { limit }) {
 
 /*
  * Парсинг сырого тела запроса в виде Buffer
- * @param {IncomingMessage} req - объект запроса
+ * @param {IncomingMessage|Request} req - объект запроса
  * @param {Object} options - опции парсинга
  * @param {number} options.limit - максимальный размер тела в байтах
  */
