@@ -4,7 +4,7 @@
     "dev": "nodemon server.js",
     "test": "jest",
     "test:core": "jest __tests__/",
-    "test:variants": "jest variants/",
+    "test:blueprints": "jest blueprints/",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch"
   }
