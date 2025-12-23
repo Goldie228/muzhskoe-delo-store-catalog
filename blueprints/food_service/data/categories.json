@@ -5,7 +5,11 @@
     "sortOrder": 1,
     "isVisible": true,
     "lastModified": "2024-01-15T10:00:00.000Z",
-    "synonyms": ["мясо", "огонь", "стейки"]
+    "synonyms": [
+      "мясо",
+      "огонь",
+      "стейки"
+    ]
   },
   {
     "id": "cat_002",
@@ -13,6 +17,74 @@
     "sortOrder": 2,
     "isVisible": true,
     "lastModified": "2024-01-15T10:00:00.000Z",
-    "synonyms": ["супы", "бульоны"]
+    "synonyms": [
+      "супы",
+      "бульоны"
+    ]
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-23T19:28:02.319Z",
+    "id": "b52b4d5e-2c4c-4453-9a40-228d8cbd8ef1",
+    "createdAt": "2025-12-23T19:28:02.320Z",
+    "updatedAt": "2025-12-23T19:28:02.320Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-23T19:28:51.218Z",
+    "id": "5c782083-6e5e-4185-b11d-c1361472a0d5",
+    "createdAt": "2025-12-23T19:28:51.219Z",
+    "updatedAt": "2025-12-23T19:28:51.219Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-23T19:29:45.475Z",
+    "id": "d88c4df4-eb68-4834-bc1d-872b55f3947e",
+    "createdAt": "2025-12-23T19:29:45.477Z",
+    "updatedAt": "2025-12-23T19:29:45.477Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-23T19:30:36.799Z",
+    "id": "72f642bf-1f10-4d64-8a6b-1c5ba678c93d",
+    "createdAt": "2025-12-23T19:30:36.802Z",
+    "updatedAt": "2025-12-23T19:30:36.802Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-23T19:53:24.433Z",
+    "id": "43d54184-a807-42b0-92e0-d5d375bc2958",
+    "createdAt": "2025-12-23T19:53:24.435Z",
+    "updatedAt": "2025-12-23T19:53:24.435Z"
   }
 ]
