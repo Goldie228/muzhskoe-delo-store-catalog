@@ -60,13 +60,13 @@ class App {
    * Запуск HTTP-сервера
    * @param {number} port - порт для прослушивания
    * @param {Function} callback - функция обратного вызова
-   * @returns {App} - возвращает экземпляр приложения для цепочки вызовов
+   * @returns {http.Server} - возвращает инстанс сервера
    */
   listen(port, callback) {
     this.server = http.createServer(this._handleRequest.bind(this));
     this.server.setTimeout(this.defaultTimeout);
-    this.server.listen(port, callback);
-    return this;
+
+    return this.server.listen(port, callback);
   }
 
   /*
