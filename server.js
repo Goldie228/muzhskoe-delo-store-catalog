@@ -7,7 +7,10 @@ const path = require('path');
 
 require('dotenv').config();
 
-
+/*
+ * Класс Server - основной класс для запуска и управления сервером приложения
+ * Отвечает за настройку middleware, загрузку маршрутов и запуск HTTP-сервера
+ */
 class Server {
   constructor() {
     this.app = new App();
@@ -17,7 +20,10 @@ class Server {
     this._errorHandler = errorHandler(); // экземпляр глобального обработчика
   }
 
-  // Настройка приложения
+  /*
+   * Настройка приложения перед запуском
+   * Регистрирует middleware, загружает маршруты и настраивает обработку ошибок
+   */
   async setup() {
     // Глобальные middleware
     this.app.use(bodyParser());
@@ -30,13 +36,13 @@ class Server {
     // Загрузка всех blueprints
     await this._loadBlueprints();
 
-    // 404 (после всех маршрутов)
+    // Обработка 404 (после всех маршрутов)
     this.app.use((req, res) => {
       // res — наш Response wrapper; ожидаем .status/.json
       if (typeof res.status === 'function' && typeof res.json === 'function') {
         return res.status(404).json({
           error: true,
-          message: `Route ${req.method} ${req.url} not found`,
+          message: `Маршрут ${req.method} ${req.url} не найден`,
           status: 404
         });
       }
@@ -45,7 +51,7 @@ class Server {
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.end(JSON.stringify({
         error: true,
-        message: `Route ${req.method} ${req.url} not found`,
+        message: `Маршрут ${req.method} ${req.url} не найден`,
         status: 404
       }));
     });
@@ -58,25 +64,31 @@ class Server {
     }
   }
 
-  // Динамическая загрузка всех blueprints
+  /*
+   * Динамическая загрузка всех blueprints из директории blueprints
+   * Ищет подпапки и загружает маршруты из каждой
+   */
   async _loadBlueprints() {
     try {
       const items = await fs.readdir(this.blueprintsDir, { withFileTypes: true });
       const dirs = items.filter(d => d.isDirectory()).map(d => d.name);
 
       const filtered = dirs.filter(name => !/template/i.test(name)); // пропускаем шаблоны
-      console.log(`Found ${filtered.length} blueprints: ${filtered.join(', ')}`);
+      console.log(`\x1b[36m[INFO]\x1b[0m Найдено ${filtered.length} модулей: ${filtered.join(', ')}`);
 
       // Загружаем последовательно (порядок может иметь значение)
       for (const dir of filtered) {
         await this._loadBlueprint(dir);
       }
     } catch (error) {
-      console.warn('Could not load blueprints:', error && error.stack ? error.stack : error.message);
+      console.warn('\x1b[33m[WARN]\x1b[0m Не удалось загрузить модули:', error && error.stack ? error.stack : error.message);
     }
   }
 
-  // Загрузка одного blueprint
+  /*
+   * Загрузка одного blueprint
+   * @param {string} dirName - имя директории blueprint
+   */
   async _loadBlueprint(dirName) {
     const blueprintPath = path.join(this.blueprintsDir, dirName);
     const routesPath = path.join(blueprintPath, 'routes');
@@ -101,29 +113,31 @@ class Server {
           const routeModule = require(routePath);
           if (typeof routeModule === 'function') {
             routeModule(this.app);
-            console.log(`Loaded route: ${dirName}/${file}`);
+            console.log(`\x1b[32m[SUCCESS]\x1b[0m Загружен маршрут: ${dirName}/${file}`);
           } else {
-            console.warn(`Route file does not export a function: ${dirName}/${file}`);
+            console.warn(`\x1b[33m[WARN]\x1b[0m Файл маршрута не экспортирует функцию: ${dirName}/${file}`);
           }
         } catch (e) {
-          console.warn(`Failed to load route ${dirName}/${file}:`, e && e.stack ? e.stack : e.message);
+          console.warn(`\x1b[31m[ERROR]\x1b[0m Не удалось загрузить маршрут ${dirName}/${file}:`, e && e.stack ? e.stack : e.message);
         }
       }
     } catch (e) {
       // Если нет папки routes или файлов — просто логируем и продолжаем
-      console.warn(`No routes found for blueprint ${dirName}:`, e && e.message ? e.message : e);
+      console.warn(`\x1b[33m[WARN]\x1b[0m Маршруты не найдены для модуля ${dirName}:`, e && e.message ? e.message : e);
     }
   }
 
-  // Запуск сервера
+  /*
+   * Запуск HTTP-сервера
+   */
   start() {
     this.app.listen(this.port, () => {
       console.log(`
-🚀 Server started successfully!
-📍 Port: ${this.port}
-📁 Blueprints: dynamically loaded from ${this.blueprintsDir}
-📚 API Documentation: see README.md
-🌐 Try: curl http://localhost:${this.port}/api/example
+\x1b[32m[SUCCESS]\x1b[0m Сервер успешно запущен!
+\x1b[36m[INFO]\x1b[0m Порт: ${this.port}
+\x1b[36m[INFO]\x1b[0m Модули: динамически загружены из ${this.blueprintsDir}
+\x1b[36m[INFO]\x1b[0m Документация API: см. README.md
+\x1b[36m[INFO]\x1b[0m Пример запроса: curl http://localhost:${this.port}/api/example
       `);
     });
 
@@ -132,24 +146,28 @@ class Server {
     process.on('SIGINT', () => this.shutdown());
   }
 
-  // Корректное завершение
+  /*
+   * Корректное завершение работы сервера
+   */
   async shutdown() {
-    console.log('\n🛑 Shutting down server...');
+    console.log('\n\x1b[33m[INFO]\x1b[0m Завершение работы сервера...');
     try {
       // Если App предоставляет close, ждём его
       if (typeof this.app.close === 'function') {
         await new Promise((resolve) => this.app.close(resolve));
       }
-      console.log('Server closed gracefully.');
+      console.log('\x1b[32m[SUCCESS]\x1b[0m Сервер корректно остановлен.');
       process.exit(0);
     } catch (err) {
-      console.error('Error during shutdown:', err && err.stack ? err.stack : err);
+      console.error('\x1b[31m[ERROR]\x1b[0m Ошибка при остановке сервера:', err && err.stack ? err.stack : err);
       process.exit(1);
     }
   }
 }
 
-// Запуск сервера
+/*
+ * Основная функция для запуска сервера
+ */
 async function main() {
   const server = new Server();
 
@@ -157,7 +175,7 @@ async function main() {
     await server.setup();
     server.start();
   } catch (error) {
-    console.error('Failed to start server:', error && error.stack ? error.stack : error);
+    console.error('\x1b[31m[ERROR]\x1b[0m Не удалось запустить сервер:', error && error.stack ? error.stack : error);
     process.exit(1);
   }
 }

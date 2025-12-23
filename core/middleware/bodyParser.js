@@ -1,6 +1,15 @@
 
 const { URLSearchParams } = require('url');
 
+/*
+ * Middleware для парсинга тела запроса
+ * @param {Object} options - опции парсера
+ * @param {number} options.limit - максимальный размер тела в байтах (по умолчанию 1 MB)
+ * @param {boolean} options.extended - для urlencoded: false -> simple, true -> URLSearchParams
+ * @param {boolean} options.strict - если true, некорректный JSON -> ошибка, иначе body = null
+ * @param {boolean} options.raw - если true, для неподдерживаемых типов возвращаем Buffer
+ * @returns {Function} - middleware функция
+ */
 function bodyParser(options = {}) {
   const {
     limit = 1 * 1024 * 1024, // 1 MB
@@ -47,7 +56,13 @@ function bodyParser(options = {}) {
   };
 }
 
-// Общая функция чтения тела с лимитом и обработкой abort/close
+/*
+ * Общая функция чтения тела с лимитом и обработкой abort/close
+ * @param {IncomingMessage} req - объект запроса
+ * @param {Object} options - опции чтения
+ * @param {number} options.limit - максимальный размер тела в байтах
+ * @returns {Promise<Buffer>} - промис с телом запроса в виде Buffer
+ */
 function _readBody(req, { limit }) {
   return new Promise((resolve, reject) => {
     if (req._bodyParsed) return resolve(null);
@@ -73,7 +88,7 @@ function _readBody(req, { limit }) {
         cleanup();
         // уничтожаем соединение и возвращаем ошибку
         try { req.destroy(); } catch (e) {}
-        return reject(Object.assign(new Error('Payload too large'), { status: 413 }));
+        return reject(Object.assign(new Error('Размер тела запроса превышает лимит'), { status: 413 }));
       }
       chunks.push(chunk);
     }
@@ -97,14 +112,14 @@ function _readBody(req, { limit }) {
       if (finished || aborted) return;
       aborted = true;
       cleanup();
-      reject(new Error('Connection closed before body was fully received'));
+      reject(new Error('Соединение закрыто до полного получения тела запроса'));
     }
 
     function onAbort() {
       if (finished || aborted) return;
       aborted = true;
       cleanup();
-      reject(new Error('Request aborted by the client'));
+      reject(new Error('Запрос прерван клиентом'));
     }
 
     req.on('data', onData);
@@ -115,6 +130,13 @@ function _readBody(req, { limit }) {
   });
 }
 
+/*
+ * Парсинг JSON тела запроса
+ * @param {IncomingMessage} req - объект запроса
+ * @param {Object} options - опции парсинга
+ * @param {number} options.limit - максимальный размер тела в байтах
+ * @param {boolean} options.strict - строгий режим парсинга JSON
+ */
 async function _parseJsonBody(req, { limit, strict }) {
   const raw = await _readBody(req, { limit });
   req._bodyParsed = true;
@@ -126,11 +148,18 @@ async function _parseJsonBody(req, { limit, strict }) {
   try {
     req.body = JSON.parse(text);
   } catch (err) {
-    if (strict) throw Object.assign(new Error('Invalid JSON body'), { status: 400, cause: err });
+    if (strict) throw Object.assign(new Error('Некорректное тело JSON'), { status: 400, cause: err });
     req.body = null;
   }
 }
 
+/*
+ * Парсинг URL-encoded тела запроса
+ * @param {IncomingMessage} req - объект запроса
+ * @param {Object} options - опции парсинга
+ * @param {number} options.limit - максимальный размер тела в байтах
+ * @param {boolean} options.extended - расширенный режим парсинга
+ */
 async function _parseUrlencodedBody(req, { limit, extended }) {
   const raw = await _readBody(req, { limit });
   req._bodyParsed = true;
@@ -169,12 +198,24 @@ async function _parseUrlencodedBody(req, { limit, extended }) {
   }
 }
 
+/*
+ * Парсинг текстового тела запроса
+ * @param {IncomingMessage} req - объект запроса
+ * @param {Object} options - опции парсинга
+ * @param {number} options.limit - максимальный размер тела в байтах
+ */
 async function _parseTextBody(req, { limit }) {
   const raw = await _readBody(req, { limit });
   req._bodyParsed = true;
   req.body = raw && raw.length ? raw.toString('utf8') : null;
 }
 
+/*
+ * Парсинг сырого тела запроса в виде Buffer
+ * @param {IncomingMessage} req - объект запроса
+ * @param {Object} options - опции парсинга
+ * @param {number} options.limit - максимальный размер тела в байтах
+ */
 async function _parseRawBody(req, { limit }) {
   const raw = await _readBody(req, { limit });
   req._bodyParsed = true;

@@ -1,5 +1,4 @@
-#
-#
+
 # 📚 Руководство разработчика API
 ## Создание модулей для каталога "Мужское дело"
 
@@ -13,7 +12,7 @@
 
 ```
 blueprints/
-├── food_service/  // Напримере моего варика
+├── food_service/  // Например, мой вариант
 │   ├── data/
 │   │   ├── products.json
 │   │   └── categories.json
@@ -121,7 +120,7 @@ class ProductsService {
   async create(productData) {
     // Валидация данных
     if (!productData.name || !productData.price) {
-      throw new Error('Name and price are required');
+      throw new Error('Название и цена обязательны');
     }
 
     return await fileManager.create(this.dataFile, productData);
@@ -186,7 +185,7 @@ class ProductsController {
         total: products.length
       });
     } catch (error) {
-      return next(createError(500, 'Failed to fetch products', error));
+      return next(createError(500, 'Не удалось получить продукты', error));
     }
   }
 
@@ -197,7 +196,7 @@ class ProductsController {
       const product = await this.service.findById(id);
       
       if (!product) {
-        return next(createError(404, 'Product not found'));
+        return next(createError(404, 'Продукт не найден'));
       }
       
       res.json({
@@ -205,7 +204,7 @@ class ProductsController {
         data: product
       });
     } catch (error) {
-      return next(createError(500, 'Failed to fetch product', error));
+      return next(createError(500, 'Не удалось получить продукт', error));
     }
   }
 
@@ -216,7 +215,7 @@ class ProductsController {
       
       // Базовая валидация
       if (!productData.name || !productData.price) {
-        return next(createError(400, 'Name and price are required'));
+        return next(createError(400, 'Название и цена обязательны'));
       }
       
       const newProduct = await this.service.create(productData);
@@ -224,10 +223,10 @@ class ProductsController {
       res.status(201).json({
         success: true,
         data: newProduct,
-        message: 'Product created successfully'
+        message: 'Продукт успешно создан'
       });
     } catch (error) {
-      return next(createError(500, 'Failed to create product', error));
+      return next(createError(500, 'Не удалось создать продукт', error));
     }
   }
 
@@ -240,16 +239,16 @@ class ProductsController {
       const updatedProduct = await this.service.update(id, updateData);
       
       if (!updatedProduct) {
-        return next(createError(404, 'Product not found'));
+        return next(createError(404, 'Продукт не найден'));
       }
       
       res.json({
         success: true,
         data: updatedProduct,
-        message: 'Product updated successfully'
+        message: 'Продукт успешно обновлен'
       });
     } catch (error) {
-      return next(createError(500, 'Failed to update product', error));
+      return next(createError(500, 'Не удалось обновить продукт', error));
     }
   }
 
@@ -261,15 +260,15 @@ class ProductsController {
       const deleted = await this.service.delete(id);
       
       if (!deleted) {
-        return next(createError(404, 'Product not found'));
+        return next(createError(404, 'Продукт не найден'));
       }
       
       res.json({
         success: true,
-        message: 'Product deleted successfully'
+        message: 'Продукт успешно удален'
       });
     } catch (error) {
-      return next(createError(500, 'Failed to delete product', error));
+      return next(createError(500, 'Не удалось удалить продукт', error));
     }
   }
 
@@ -286,7 +285,7 @@ class ProductsController {
         tag: tag
       });
     } catch (error) {
-      return next(createError(500, 'Failed to search products', error));
+      return next(createError(500, 'Не удалось найти продукты', error));
     }
   }
 
@@ -296,7 +295,7 @@ class ProductsController {
       const { min, max } = req.query;
       
       if (!min || !max) {
-        return next(createError(400, 'Min and max price are required'));
+        return next(createError(400, 'Минимальная и максимальная цена обязательны'));
       }
       
       const products = await this.service.findByPriceRange(
@@ -311,7 +310,7 @@ class ProductsController {
         priceRange: { min: parseFloat(min), max: parseFloat(max) }
       });
     } catch (error) {
-      return next(createError(500, 'Failed to search products', error));
+      return next(createError(500, 'Не удалось найти продукты', error));
     }
   }
 }
@@ -353,7 +352,7 @@ const App = require('../../../core/App');
 const bodyParser = require('../../../core/middleware/bodyParser');
 const { errorHandler } = require('../../../core/middleware/errorHandler');
 
-describe('Products API', () => {
+describe('API продуктов', () => {
   let app;
   
   beforeAll(() => {
@@ -366,7 +365,7 @@ describe('Products API', () => {
   });
 
   describe('GET /api/products', () => {
-    test('should return all products', async () => {
+    test('должен возвращать все продукты', async () => {
       const response = await request(app)
         .get('/api/products')
         .expect(200);
@@ -378,7 +377,7 @@ describe('Products API', () => {
   });
 
   describe('GET /api/products/:id', () => {
-    test('should return product by ID', async () => {
+    test('должен возвращать продукт по ID', async () => {
       // Сначала получаем все продукты, чтобы найти ID
       const productsResponse = await request(app)
         .get('/api/products')
@@ -396,18 +395,18 @@ describe('Products API', () => {
       }
     });
 
-    test('should return 404 for non-existent product', async () => {
+    test('должен возвращать 404 для несуществующего продукта', async () => {
       const response = await request(app)
         .get('/api/products/non-existent-id')
         .expect(404);
       
       expect(response.body.error).toBe(true);
-      expect(response.body.message).toContain('not found');
+      expect(response.body.message).toContain('не найден');
     });
   });
 
   describe('POST /api/products', () => {
-    test('should create new product', async () => {
+    test('должен создавать новый продукт', async () => {
       const newProduct = {
         name: 'Тестовый продукт',
         price: 999.99,
@@ -427,7 +426,7 @@ describe('Products API', () => {
       expect(response.body.data.createdAt).toBeDefined();
     });
 
-    test('should return 400 for missing required fields', async () => {
+    test('должен возвращать 400 для отсутствующих обязательных полей', async () => {
       const invalidProduct = {
         price: 999.99
       };
@@ -438,12 +437,12 @@ describe('Products API', () => {
         .expect(400);
       
       expect(response.body.error).toBe(true);
-      expect(response.body.message).toContain('required');
+      expect(response.body.message).toContain('обязательны');
     });
   });
 
   describe('PUT /api/products/:id', () => {
-    test('should update existing product', async () => {
+    test('должен обновлять существующий продукт', async () => {
       // Сначала создаем продукт
       const createResponse = await request(app)
         .post('/api/products')
@@ -475,7 +474,7 @@ describe('Products API', () => {
   });
 
   describe('DELETE /api/products/:id', () => {
-    test('should delete existing product', async () => {
+    test('должен удалять существующий продукт', async () => {
       // Сначала создаем продукт
       const createResponse = await request(app)
         .post('/api/products')
@@ -494,7 +493,7 @@ describe('Products API', () => {
         .expect(200);
       
       expect(deleteResponse.body.success).toBe(true);
-      expect(deleteResponse.body.message).toContain('deleted');
+      expect(deleteResponse.body.message).toContain('удален');
       
       // Проверяем, что продукт действительно удален
       await request(app)
@@ -561,11 +560,11 @@ const { createError } = require('../../../core/middleware/errorHandler');
 
 // В контроллере
 if (!product) {
-  return next(createError(404, 'Product not found'));
+  return next(createError(404, 'Продукт не найден'));
 }
 
 if (!req.body.name) {
-  return next(createError(400, 'Name is required'));
+  return next(createError(400, 'Название обязательно'));
 }
 ```
 
@@ -597,15 +596,15 @@ function validateProduct(data) {
   const errors = [];
   
   if (!data.name || data.name.length < 3) {
-    errors.push('Name must be at least 3 characters');
+    errors.push('Название должно содержать минимум 3 символа');
   }
   
   if (!data.price || data.price < 0) {
-    errors.push('Price must be a positive number');
+    errors.push('Цена должна быть положительным числом');
   }
   
   if (errors.length > 0) {
-    throw createError(400, 'Validation failed', { errors });
+    throw createError(400, 'Ошибка валидации', { errors });
   }
 }
 ```
@@ -619,14 +618,14 @@ function validateProduct(data) {
 {
   "success": true,
   "data": { ... },
-  "message": "Operation completed successfully",
+  "message": "Операция выполнена успешно",
   "total": 10 // для списков
 }
 
 // Ответ с ошибкой
 {
   "error": true,
-  "message": "Error description",
+  "message": "Описание ошибки",
   "status": 400,
   "details": { ... } // опционально
 }
@@ -654,11 +653,11 @@ async getById(req, res, next) {
   try {
     const product = await this.service.findById(req.params.id);
     if (!product) {
-      return next(createError(404, 'Product not found'));
+      return next(createError(404, 'Продукт не найден'));
     }
     res.json({ success: true, data: product });
   } catch (error) {
-    next(createError(500, 'Failed to fetch product', error));
+    next(createError(500, 'Не удалось получить продукт', error));
   }
 }
 ```
@@ -696,3 +695,4 @@ async getById(req, res, next) {
 ---
 
 Эта документация предоставит вашей команде все необходимые инструменты и знания для успешной реализации API для каталога "Мужское дело". Каждый разработчик сможет работать независимо, используя общую инфраструктуру фреймворка.
+```

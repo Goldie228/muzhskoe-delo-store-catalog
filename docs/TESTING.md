@@ -1,5 +1,4 @@
-#
-#
+
 # 🧪 Руководство по тестированию
 
 ## 📋 Обзор
@@ -36,7 +35,7 @@ const request = require('supertest');
 const app = require('./core/App');
 
 describe('API Tests', () => {
-  test('should return users list', async () => {
+  test('должен возвращать список пользователей', async () => {
     const response = await request(app)
       .get('/api/users')
       .expect(200);
@@ -87,7 +86,7 @@ const App = require('../../../core/App');
 const bodyParser = require('../../../core/middleware/bodyParser');
 const { errorHandler } = require('../../../core/middleware/errorHandler');
 
-describe('Products Controller', () => {
+describe('Контроллер продуктов', () => {
   let app;
   
   beforeAll(() => {
@@ -100,7 +99,7 @@ describe('Products Controller', () => {
   });
 
   describe('GET /api/products', () => {
-    test('should return all products', async () => {
+    test('должен возвращать все продукты', async () => {
       const response = await request(app)
         .get('/api/products')
         .expect(200);
@@ -112,7 +111,7 @@ describe('Products Controller', () => {
   });
 
   describe('POST /api/products', () => {
-    test('should create new product', async () => {
+    test('должен создавать новый продукт', async () => {
       const newProduct = {
         name: 'Тестовый продукт',
         price: 999.99,
@@ -129,7 +128,7 @@ describe('Products Controller', () => {
       expect(response.body.data.id).toBeDefined();
     });
 
-    test('should return 400 for missing required fields', async () => {
+    test('должен возвращать 400 для отсутствующих обязательных полей', async () => {
       const invalidProduct = {
         price: 999.99
       };
@@ -140,7 +139,7 @@ describe('Products Controller', () => {
         .expect(400);
       
       expect(response.body.error).toBe(true);
-      expect(response.body.message).toContain('required');
+      expect(response.body.message).toContain('обязательны');
     });
   });
 });
@@ -152,7 +151,7 @@ describe('Products Controller', () => {
 const ProductsService = require('../services/ProductsService');
 const { fileManager } = require('../../../lib/fileManager');
 
-describe('Products Service', () => {
+describe('Сервис продуктов', () => {
   const testDataFile = 'test-products.json';
   let service;
 
@@ -172,7 +171,7 @@ describe('Products Service', () => {
   });
 
   describe('findAll', () => {
-    test('should return all products', async () => {
+    test('должен возвращать все продукты', async () => {
       const products = await service.findAll();
       expect(products).toHaveLength(2);
       expect(products[0].name).toBe('Продукт 1');
@@ -180,19 +179,19 @@ describe('Products Service', () => {
   });
 
   describe('findById', () => {
-    test('should return product by ID', async () => {
+    test('должен возвращать продукт по ID', async () => {
       const product = await service.findById('1');
       expect(product.name).toBe('Продукт 1');
     });
 
-    test('should return null for non-existent ID', async () => {
+    test('должен возвращать null для несуществующего ID', async () => {
       const product = await service.findById('999');
       expect(product).toBeNull();
     });
   });
 
   describe('create', () => {
-    test('should create new product', async () => {
+    test('должен создавать новый продукт', async () => {
       const newProduct = {
         name: 'Новый продукт',
         price: 300,
@@ -213,7 +212,7 @@ describe('Products Service', () => {
 ```javascript
 const { fileManager } = require('../../../lib/fileManager');
 
-describe('File Manager', () => {
+describe('Менеджер файлов', () => {
   const testFile = 'test-data.json';
 
   afterAll(async () => {
@@ -226,12 +225,12 @@ describe('File Manager', () => {
   });
 
   describe('readJSON', () => {
-    test('should return empty array for non-existent file', async () => {
+    test('должен возвращать пустой массив для несуществующего файла', async () => {
       const data = await fileManager.readJSON('non-existent-file.json');
       expect(data).toEqual([]);
     });
 
-    test('should parse JSON file', async () => {
+    test('должен парсить JSON файл', async () => {
       await fs.writeFile(testFile, '[{"name": "test"}]');
       const data = await fileManager.readJSON(testFile);
       expect(data).toEqual([{ name: 'test' }]);
@@ -239,7 +238,7 @@ describe('File Manager', () => {
   });
 
   describe('writeJSON', () => {
-    test('should write data to file', async () => {
+    test('должен записывать данные в файл', async () => {
       const testData = [{ name: 'test' }];
       await fileManager.writeJSON(testFile, testData);
       
@@ -285,7 +284,7 @@ afterAll(() => {
 ```javascript
 module.exports = async () => {
   // Очистка после всех тестов
-  console.log('\n✅ All tests completed');
+  console.log('\n✅ Все тесты завершены');
 };
 ```
 
@@ -319,25 +318,25 @@ collectCoverageFrom: [
 
 ```javascript
 // Плохо: зависимость от предыдущего теста
-test('create product', async () => {
+test('создать продукт', async () => {
   // создаем продукт
   const product = await service.create({ name: 'Test' });
   expect(product.id).toBeDefined();
 });
 
-test('get product', async () => {
+test('получить продукт', async () => {
   // зависим от предыдущего теста
   const product = await service.findById(product.id);
   expect(product.name).toBe('Test');
 });
 
 // Хорошо: независимые тесты
-test('create product', async () => {
+test('создать продукт', async () => {
   const product = await service.create({ name: 'Test' });
   expect(product.id).toBeDefined();
 });
 
-test('get product', async () => {
+test('получить продукт', async () => {
   // создаем продукт для этого теста
   const created = await service.create({ name: 'Test' });
   const product = await service.findById(created.id);
@@ -350,17 +349,17 @@ test('get product', async () => {
 
 ```javascript
 describe('findById', () => {
-  test('should return product for valid ID', async () => {
+  test('должен возвращать продукт для валидного ID', async () => {
     const product = await service.findById('1');
     expect(product).toBeDefined();
   });
 
-  test('should return null for non-existent ID', async () => {
+  test('должен возвращать null для несуществующего ID', async () => {
     const product = await service.findById('non-existent');
     expect(product).toBeNull();
   });
 
-  test('should handle null ID', async () => {
+  test('должен обрабатывать null ID', async () => {
     await expect(service.findById(null)).rejects.toThrow();
   });
 });
@@ -379,7 +378,7 @@ jest.mock('fs', () => ({
 
 const fs = require('fs');
 
-test('should read file', async () => {
+test('должен читать файл', async () => {
   fs.promises.readFile.mockResolvedValue('{"test": true}');
   
   const data = await fileManager.readJSON('test.json');
@@ -391,7 +390,7 @@ test('should read file', async () => {
 Для подготовки и очистки данных между тестами:
 
 ```javascript
-describe('Service Tests', () => {
+describe('Тесты сервиса', () => {
   let service;
 
   beforeEach(async () => {
@@ -405,7 +404,7 @@ describe('Service Tests', () => {
     await fs.unlink('test.json');
   });
 
-  test('should create item', async () => {
+  test('должен создавать элемент', async () => {
     const item = await service.create({ name: 'Test' });
     expect(item.id).toBeDefined();
   });

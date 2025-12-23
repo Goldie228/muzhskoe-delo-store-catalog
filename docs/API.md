@@ -1,6 +1,5 @@
-#
-#
-# 🔧 API Reference
+
+# 🔧 Справочник API
 
 ## 📋 Обзор
 
@@ -26,7 +25,7 @@ const app = new App();
 **Пример:**
 ```javascript
 app.use((req, res, next) => {
-  console.log('Request received');
+  console.log('Запрос получен');
   next();
 });
 ```
@@ -84,7 +83,7 @@ app.get('/api/users', (req, res) => {
 **Пример:**
 ```javascript
 app.listen(3000, () => {
-  console.log('Server started on port 3000');
+  console.log('Сервер запущен на порту 3000');
 });
 ```
 
@@ -271,7 +270,7 @@ app.use(errorHandler({ logger: customLogger }));
 ```javascript
 const { createError } = require('./core/middleware/errorHandler');
 if (!user) {
-  return next(createError(404, 'User not found'));
+  return next(createError(404, 'Пользователь не найден'));
 }
 ```
 

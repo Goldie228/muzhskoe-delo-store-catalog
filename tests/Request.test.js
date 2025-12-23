@@ -2,7 +2,7 @@
 const http = require('http');
 const Request = require('../core/Request');
 
-describe('Request wrapper', () => {
+describe('Обёртка Request', () => {
   let server;
   let port;
 
@@ -32,7 +32,7 @@ describe('Request wrapper', () => {
     server.close(done);
   });
 
-  test('parses pathname and query from URL', async () => {
+  test('парсит pathname и query из URL', async () => {
     const url = `http://127.0.0.1:${port}/api/test/path?x=1&y=hello`;
     const data = await new Promise((resolve, reject) => {
       http.get(url, (res) => {
@@ -48,7 +48,7 @@ describe('Request wrapper', () => {
     expect(data.query).toEqual({ x: '1', y: 'hello' });
   });
 
-  test('handles root path and empty query', async () => {
+  test('обрабатывает корневой путь и пустой query', async () => {
     const url = `http://127.0.0.1:${port}/?a=1`;
     const data = await new Promise((resolve, reject) => {
       http.get(url, (res) => {

@@ -1,7 +1,7 @@
 
 const App = require('../core/App');
 
-describe('App Class', () => {
+describe('Класс App', () => {
   let app;
 
   beforeEach(() => {
@@ -14,13 +14,13 @@ describe('App Class', () => {
     if (Array.isArray(app.middlewares)) app.middlewares.length = 0;
   });
 
-  test('should create app instance', () => {
+  test('должен создавать экземпляр приложения', () => {
     expect(app).toBeInstanceOf(App);
     expect(Array.isArray(app.routes)).toBe(true);
     expect(Array.isArray(app.middlewares)).toBe(true);
   });
 
-  test('should register GET route', () => {
+  test('должен регистрировать GET маршрут', () => {
     const handler = jest.fn();
     app.get('/test', handler);
 
@@ -38,7 +38,7 @@ describe('App Class', () => {
     }
   });
 
-  test('should support method chaining', () => {
+  test('должен поддерживать цепочку вызовов методов', () => {
     const result = app.get('/test', jest.fn()).post('/test', jest.fn());
     expect(result).toBe(app);
     if (Array.isArray(app.routes)) expect(app.routes).toHaveLength(2);

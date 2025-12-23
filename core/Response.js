@@ -1,28 +1,46 @@
 
 const { ServerResponse } = require('http');
 
-
+/*
+ * Класс Response - обёртка над нативным объектом ServerResponse
+ * Предоставляет удобный интерфейс для формирования HTTP-ответа
+ */
 class Response {
   constructor(res) {
-    if (!(res instanceof ServerResponse)) throw new TypeError('res must be ServerResponse');
+    if (!(res instanceof ServerResponse)) throw new TypeError('res должен быть ServerResponse');
     this._res = res;
     this.finished = false;
   }
 
+  /*
+   * Установка статуса ответа
+   * @param {number} code - HTTP статус код
+   * @returns {Response} - возвращает экземпляр для цепочки вызовов
+   */
   status(code) {
     if (!Number.isInteger(code) || code < 100 || code > 599) {
-      throw new TypeError('Invalid HTTP status code');
+      throw new TypeError('Некорректный HTTP статус код');
     }
     this._res.statusCode = code;
     return this;
   }
 
+  /*
+   * Установка заголовка, если он еще не установлен
+   * @param {string} name - имя заголовка
+   * @param {string} value - значение заголовка
+   */
   _ensureHeader(name, value) {
     if (!this._res.getHeader(name)) {
       this._res.setHeader(name, value);
     }
   }
 
+  /*
+   * Отправка JSON-ответа
+   * @param {*} data - данные для сериализации в JSON
+   * @returns {Response} - возвращает экземпляр для цепочки вызовов
+   */
   json(data) {
     try {
       const body = JSON.stringify(data);
@@ -34,7 +52,7 @@ class Response {
       // Если сериализация упала — отправляем 500 или безопасное сообщение
       if (!this._res.headersSent) {
         this._res.statusCode = 500;
-        const fallback = JSON.stringify({ error: 'Failed to serialize response' });
+        const fallback = JSON.stringify({ error: 'Ошибка сериализации ответа' });
         this._res.setHeader('Content-Type', 'application/json; charset=utf-8');
         this._res.setHeader('Content-Length', Buffer.byteLength(fallback));
         this._res.write(fallback);
@@ -44,6 +62,11 @@ class Response {
     return this;
   }
 
+  /*
+   * Отправка ответа различных типов
+   * @param {*} data - данные для отправки
+   * @returns {Response} - возвращает экземпляр для цепочки вызовов
+   */
   send(data) {
     if (data === null || data === undefined) {
       // Пустой ответ
@@ -72,7 +95,7 @@ class Response {
       data.on('error', () => {
         if (!this._res.headersSent) {
           this._res.statusCode = 500;
-          this._res.end('Stream error');
+          this._res.end('Ошибка потока');
         } else {
           this._res.end();
         }
@@ -92,18 +115,24 @@ class Response {
     return this;
   }
 
+  /*
+   * Завершение ответа
+   */
   _end() {
     if (!this.finished && !this._res.writableEnded) {
       try {
         this._res.end();
       } catch (e) {
-        // ignore
+        // игнорируем ошибки при завершении
       }
     }
     this.finished = true;
   }
 
-  // Проксируем полезные свойства/методы при необходимости
+  /*
+   * Геттер для проверки, были ли отправлены заголовки
+   * @returns {boolean} - true если заголовки отправлены
+   */
   get headersSent() {
     return this._res.headersSent;
   }

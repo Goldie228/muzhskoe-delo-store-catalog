@@ -1,13 +1,22 @@
 
+/*
+ * Класс Router - маршрутизатор HTTP-запросов
+ * Отвечает за регистрацию и поиск маршрутов по методу и URL
+ */
 class Router {
   constructor() {
     this.routes = [];
   }
 
-  // Регистрация маршрута
+  /*
+   * Регистрация маршрута
+   * @param {string} method - HTTP метод
+   * @param {string} path - путь маршрута
+   * @param {Function} handler - обработчик маршрута
+   */
   register(method, path, handler) {
     if (typeof method !== 'string' || typeof path !== 'string' || typeof handler !== 'function') {
-      throw new TypeError('register(method: string, path: string, handler: function) expected');
+      throw new TypeError('Ожидается register(method: string, path: string, handler: function)');
     }
 
     const normalizedMethod = method.toUpperCase();
@@ -23,7 +32,12 @@ class Router {
     });
   }
 
-  // Поиск подходящего маршрута
+  /*
+   * Поиск подходящего маршрута
+   * @param {string} method - HTTP метод
+   * @param {string} url - URL запроса
+   * @returns {Object|null} - информация о маршруте или null
+   */
   find(method, url) {
     if (!method || !url) return null;
     const normalizedMethod = method.toUpperCase();
@@ -64,7 +78,11 @@ class Router {
     return null; // Маршрут не найден
   }
 
-  // Преобразование пути в RegExp и извлечение имён параметров
+  /*
+   * Преобразование пути в RegExp и извлечение имён параметров
+   * @param {string} path - путь маршрута
+   * @returns {Object} - объект с pattern и paramNames
+   */
   _pathToPattern(path) {
     const parts = path.split('/').filter(Boolean); // убираем пустые сегменты
     const paramNames = [];
@@ -83,7 +101,12 @@ class Router {
     return { pattern, paramNames };
   }
 
-  // Построение объекта params из совпадения RegExp
+  /*
+   * Построение объекта params из совпадения RegExp
+   * @param {Array} paramNames - массив имён параметров
+   * @param {Array} match - результат совпадения RegExp
+   * @returns {Object} - объект с параметрами
+   */
   _buildParams(paramNames, match) {
     const params = {};
     for (let i = 0; i < paramNames.length; i++) {
@@ -99,7 +122,11 @@ class Router {
     return params;
   }
 
-  // Парсинг query-строки с поддержкой повторяющихся ключей
+  /*
+   * Парсинг query-строки с поддержкой повторяющихся ключей
+   * @param {string} queryString - строка запроса
+   * @returns {Object} - объект с параметрами запроса
+   */
   _parseQuery(queryString) {
     if (!queryString) return {};
     try {
@@ -133,7 +160,11 @@ class Router {
     }
   }
 
-  // Нормализация пути: гарантируем ведущий слеш, убираем лишние слеши в конце (кроме корня)
+  /*
+   * Нормализация пути: гарантируем ведущий слеш, убираем лишние слеши в конце (кроме корня)
+   * @param {string} path - путь для нормализации
+   * @returns {string} - нормализованный путь
+   */
   _normalizePath(path) {
     if (!path) return '/';
     let p = String(path);
@@ -149,7 +180,11 @@ class Router {
     return p;
   }
 
-  // Экранирование спецсимволов RegExp
+  /*
+   * Экранирование спецсимволов RegExp
+   * @param {string} string - строка для экранирования
+   * @returns {string} - экранированная строка
+   */
   _escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }

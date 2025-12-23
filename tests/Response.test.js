@@ -2,7 +2,7 @@
 const http = require('http');
 const Response = require('../core/Response');
 
-describe('Response wrapper', () => {
+describe('Обёртка Response', () => {
   let server;
   let port;
 
@@ -23,7 +23,7 @@ describe('Response wrapper', () => {
       }
 
       if (req.url === '/object-send') {
-        // send should treat object as JSON
+        // send должен обрабатывать объект как JSON
         wrapped.send({ a: 1 });
         return;
       }
@@ -40,7 +40,7 @@ describe('Response wrapper', () => {
     server.close(done);
   });
 
-  test('json() sets status and returns JSON body', async () => {
+  test('json() устанавливает статус и возвращает JSON тело', async () => {
     const url = `http://127.0.0.1:${port}/json`;
     const res = await new Promise((resolve, reject) => {
       http.get(url, (res) => {
@@ -57,7 +57,7 @@ describe('Response wrapper', () => {
     expect(parsed).toEqual({ ok: true, route: 'json' });
   });
 
-  test('send() with string sets text/plain and status', async () => {
+  test('send() со строкой устанавливает text/plain и статус', async () => {
     const url = `http://127.0.0.1:${port}/text`;
     const res = await new Promise((resolve, reject) => {
       http.get(url, (res) => {
@@ -73,7 +73,7 @@ describe('Response wrapper', () => {
     expect(res.body).toBe('hello world');
   });
 
-  test('send() with object behaves like json()', async () => {
+  test('send() с объектом работает как json()', async () => {
     const url = `http://127.0.0.1:${port}/object-send`;
     const res = await new Promise((resolve, reject) => {
       http.get(url, (res) => {

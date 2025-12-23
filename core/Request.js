@@ -1,10 +1,13 @@
 
 const { IncomingMessage } = require('http');
 
-
+/*
+ * Класс Request - обёртка над нативным объектом IncomingMessage
+ * Предоставляет удобный интерфейс для работы с HTTP-запросом
+ */
 class Request {
   constructor(req) {
-    if (!(req instanceof IncomingMessage)) throw new TypeError('req must be IncomingMessage');
+    if (!(req instanceof IncomingMessage)) throw new TypeError('req должен быть IncomingMessage');
     this._req = req;
 
     // Поля, которые мы добавляем
@@ -18,6 +21,9 @@ class Request {
     this._parseUrl();
   }
 
+  /*
+   * Парсинг URL для извлечения пути и параметров запроса
+   */
   _parseUrl() {
     try {
       const host = this._req.headers.host || 'localhost';
@@ -37,7 +43,13 @@ class Request {
     }
   }
 
-  // Асинхронный парсер тела с лимитом (по умолчанию 1MB)
+  /*
+   * Асинхронный парсер тела запроса с ограничением размера
+   * @param {Object} options - опции парсинга
+   * @param {number} options.limit - максимальный размер тела в байтах (по умолчанию 1MB)
+   * @param {string} options.type - тип парсинга ('auto', 'json', 'text', 'urlencoded')
+   * @returns {Promise} - промис с результатом парсинга
+   */
   async parseBody({ limit = 1 * 1024 * 1024, type = 'auto' } = {}) {
     if (this.body !== null) return this.body; // уже распарсено
 
@@ -49,7 +61,7 @@ class Request {
       req.on('data', (chunk) => {
         length += chunk.length;
         if (length > limit) {
-          reject(new Error('Payload too large'));
+          reject(new Error('Размер тела запроса превышает лимит'));
           req.destroy();
           return;
         }
@@ -92,7 +104,10 @@ class Request {
     });
   }
 
-  // Доступ к оригинальному IncomingMessage при необходимости
+  /*
+   * Геттер для доступа к оригинальному объекту IncomingMessage
+   * @returns {IncomingMessage} - оригинальный объект запроса
+   */
   get raw() {
     return this._req;
   }

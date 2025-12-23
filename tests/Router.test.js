@@ -1,3 +1,4 @@
+
 const Router = require('../core/Router');
 
 describe('Router', () => {
@@ -7,8 +8,8 @@ describe('Router', () => {
     router = new Router();
   });
 
-  describe('path matching', () => {
-    test('should match exact path', () => {
+  describe('Проверка соответствия путей', () => {
+    test('должен соответствовать точному пути', () => {
       const handler = jest.fn();
       router.register('GET', '/users', handler);
 
@@ -17,7 +18,7 @@ describe('Router', () => {
       expect(result.handler).toBe(handler);
     });
 
-    test('should extract route parameters', () => {
+    test('должен извлекать параметры маршрута', () => {
       router.register('GET', '/users/:id', jest.fn());
 
       const result = router.find('GET', '/users/123');
@@ -25,7 +26,7 @@ describe('Router', () => {
       expect(result.params).toEqual({ id: '123' });
     });
 
-    test('should parse query string', () => {
+    test('должен парсить строку запроса', () => {
       router.register('GET', '/search', jest.fn());
 
       const result = router.find('GET', '/search?q=test&page=1');
@@ -33,20 +34,20 @@ describe('Router', () => {
       expect(result.query).toEqual({ q: 'test', page: '1' });
     });
 
-    test('should return null for unmatched method', () => {
+    test('должен вернуть null для несоответствующего метода', () => {
       router.register('GET', '/users', jest.fn());
       const result = router.find('POST', '/users');
       expect(result).toBeNull();
     });
 
-    test('should match multiple params and decode them', () => {
+    test('должен парсить несколько параметров и декодировать их', () => {
       router.register('GET', '/org/:orgId/user/:userId', jest.fn());
       const result = router.find('GET', '/org/acme%20inc/user/u-42');
       expect(result).not.toBeNull();
       expect(result.params).toEqual({ orgId: 'acme inc', userId: 'u-42' });
     });
 
-    test('should prefer exact route over param route when both registered', () => {
+    test('должен предпочитать точный маршрут параметризованному, когда оба зарегистрированы', () => {
       const exact = jest.fn();
       const param = jest.fn();
       router.register('GET', '/items/special', exact);
