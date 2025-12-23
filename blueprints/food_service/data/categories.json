@@ -1,0 +1,18 @@
+[
+  {
+    "id": "cat_001",
+    "title": "Гриль меню",
+    "sortOrder": 1,
+    "isVisible": true,
+    "lastModified": "2024-01-15T10:00:00.000Z",
+    "synonyms": ["мясо", "огонь", "стейки"]
+  },
+  {
+    "id": "cat_002",
+    "title": "Первые блюда",
+    "sortOrder": 2,
+    "isVisible": true,
+    "lastModified": "2024-01-15T10:00:00.000Z",
+    "synonyms": ["супы", "бульоны"]
+  }
+]
