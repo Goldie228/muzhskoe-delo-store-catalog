@@ -1,0 +1,12 @@
+[
+  {
+    "id": "phil_001",
+    "name": "Сократ",
+    "birthYear": -470,
+    "isActive": false,
+    "dateOfDeath": "-399-01-01T00:00:00.000Z",
+    "schools": ["Античная философия"],
+    "createdAt": "2024-01-01T10:00:00.000Z",
+    "updatedAt": "2024-01-01T10:00:00.000Z"
+  }
+]
