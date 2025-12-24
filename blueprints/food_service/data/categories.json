@@ -138,5 +138,96 @@
     "id": "8484efc3-8caf-43be-a33e-64d0dad6c0ee",
     "createdAt": "2025-12-24T07:23:04.094Z",
     "updatedAt": "2025-12-24T07:23:04.094Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T13:30:05.644Z",
+    "id": "9b28a6af-8acb-472e-9854-c4fccd8145f2",
+    "createdAt": "2025-12-24T13:30:05.645Z",
+    "updatedAt": "2025-12-24T13:30:05.645Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T13:33:55.706Z",
+    "id": "af1df64b-1863-4309-ba91-5d8898adfef9",
+    "createdAt": "2025-12-24T13:33:55.708Z",
+    "updatedAt": "2025-12-24T13:33:55.708Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T13:35:08.222Z",
+    "id": "39b9ff5c-2bec-4c46-9fa1-32230a68a15b",
+    "createdAt": "2025-12-24T13:35:08.224Z",
+    "updatedAt": "2025-12-24T13:35:08.224Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T13:36:56.114Z",
+    "id": "0ae176ae-89f0-4e11-812c-eb5dedf4e083",
+    "createdAt": "2025-12-24T13:36:56.116Z",
+    "updatedAt": "2025-12-24T13:36:56.116Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T13:38:09.639Z",
+    "id": "bce4a15e-0b4f-456e-a939-4f8e4cdd1046",
+    "createdAt": "2025-12-24T13:38:09.641Z",
+    "updatedAt": "2025-12-24T13:38:09.641Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T13:42:08.855Z",
+    "id": "8c2b61f9-c78b-4b95-b00b-d1917ab04d5b",
+    "createdAt": "2025-12-24T13:42:08.857Z",
+    "updatedAt": "2025-12-24T13:42:08.857Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T13:43:49.028Z",
+    "id": "a66249e6-11ba-40fb-9ede-ce0837f8329a",
+    "createdAt": "2025-12-24T13:43:49.029Z",
+    "updatedAt": "2025-12-24T13:43:49.029Z"
   }
 ]
