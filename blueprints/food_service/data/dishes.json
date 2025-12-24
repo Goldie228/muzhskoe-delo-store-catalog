@@ -132,5 +132,89 @@
     "id": "be7d5780-b8b2-4af2-91ba-a2bb8a325641",
     "createdAt": "2025-12-24T07:23:03.900Z",
     "updatedAt": "2025-12-24T07:23:03.900Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:30:05.653Z",
+    "id": "2ccd8fac-df77-47b5-9063-99b367ff1ba2",
+    "createdAt": "2025-12-24T13:30:05.655Z",
+    "updatedAt": "2025-12-24T13:30:05.655Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:33:55.606Z",
+    "id": "7da068d6-bb38-4ca5-9e35-fc9e910786cf",
+    "createdAt": "2025-12-24T13:33:55.608Z",
+    "updatedAt": "2025-12-24T13:33:55.608Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:35:08.211Z",
+    "id": "a27e3d23-eb64-442b-89ee-4653049bc136",
+    "createdAt": "2025-12-24T13:35:08.212Z",
+    "updatedAt": "2025-12-24T13:35:08.212Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:36:56.013Z",
+    "id": "8a716c67-a04a-484d-8be8-cae08f99b08c",
+    "createdAt": "2025-12-24T13:36:56.015Z",
+    "updatedAt": "2025-12-24T13:36:56.015Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:38:09.706Z",
+    "id": "918b43bf-0233-4c8a-87b5-1ed9459de43c",
+    "createdAt": "2025-12-24T13:38:09.707Z",
+    "updatedAt": "2025-12-24T13:38:09.707Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:42:08.788Z",
+    "id": "fed14d20-d6c1-4f6d-b609-2fdf3a1fc2ae",
+    "createdAt": "2025-12-24T13:42:08.790Z",
+    "updatedAt": "2025-12-24T13:42:08.790Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:43:49.020Z",
+    "id": "d9300c23-ee27-40e1-8d01-1bd6f83df084",
+    "createdAt": "2025-12-24T13:43:49.022Z",
+    "updatedAt": "2025-12-24T13:43:49.022Z"
   }
 ]
