@@ -1,4 +1,4 @@
-
+// server.js
 const App = require('./core/App');
 const bodyParser = require('./core/middleware/bodyParser');
 const { errorHandler } = require('./core/middleware/errorHandler');
@@ -12,12 +12,13 @@ require('dotenv').config();
  * Отвечает за настройку middleware, загрузку маршрутов и запуск HTTP-сервера
  */
 class Server {
-  constructor() {
+  constructor(options = {}) {
     this.app = new App();
-    this.port = process.env.PORT || 3000;
+    this.port = process.env.PORT || options.port || 3000;
     // Жёстко привязываем папку blueprints рядом с server.js
-    this.blueprintsDir = path.join(__dirname, 'blueprints');
+    this.blueprintsDir = options.blueprintsDir || path.join(__dirname, 'blueprints');
     this._errorHandler = errorHandler(); // экземпляр глобального обработчика
+    this._isSetup = false;
   }
 
   /*
@@ -25,7 +26,9 @@ class Server {
    * Регистрирует middleware, загружает маршруты и настраивает обработку ошибок
    */
   async setup() {
-    // Глобальные middleware
+    if (this._isSetup) return this.app;
+
+    // Глобальные middleware (bodyParser должен быть зарегистрирован до маршрутов)
     this.app.use(bodyParser());
 
     // Передаём error handler в App, чтобы он вызывался при ошибках в обработчике
@@ -33,7 +36,7 @@ class Server {
       this.app.setErrorHandler(this._errorHandler);
     }
 
-    // Загрузка всех blueprints
+    // Загрузка всех blueprints (маршрутов)
     await this._loadBlueprints();
 
     // Обработка 404 (после всех маршрутов)
@@ -56,12 +59,14 @@ class Server {
       }));
     });
 
-    // Placeholder для совместимости — реальная обработка ошибок идёт через setErrorHandler
-    if (typeof this.app.use === 'function') {
-      this.app.use((req, res, next) => {
-        if (typeof next === 'function') next();
-      });
+    // Если App не использует setErrorHandler, регистрируем глобальный middleware-обработчик ошибок
+    // (выполнится после маршрутов)
+    if (typeof this.app.use === 'function' && typeof this.app.setErrorHandler !== 'function') {
+      this.app.use(this._errorHandler);
     }
+
+    this._isSetup = true;
+    return this.app;
   }
 
   /*
@@ -131,6 +136,11 @@ class Server {
    * Запуск HTTP-сервера
    */
   start() {
+    // Убедимся, что setup выполнен
+    if (!this._isSetup) {
+      throw new Error('Server not setup. Call await server.setup() before server.start()');
+    }
+
     this.app.listen(this.port, () => {
       console.log(`
 \x1b[32m[SUCCESS]\x1b[0m Сервер успешно запущен!
@@ -166,6 +176,16 @@ class Server {
 }
 
 /*
+ * Утилита: создаёт и настраивает App и возвращает его.
+ * Полезно для тестов (Supertest) — можно получить app без запуска listen.
+ */
+async function createApp(options = {}) {
+  const server = new Server(options);
+  await server.setup();
+  return server.app;
+}
+
+/*
  * Основная функция для запуска сервера
  */
 async function main() {
@@ -180,8 +200,15 @@ async function main() {
   }
 }
 
+/*
+ * Если файл запущен напрямую — стартуем сервер.
+ * Если модуль импортируется (например, в тестах), экспортируем Server и createApp.
+ */
 if (require.main === module) {
   main();
 }
 
-module.exports = Server;
+module.exports = {
+  Server,
+  createApp
+};

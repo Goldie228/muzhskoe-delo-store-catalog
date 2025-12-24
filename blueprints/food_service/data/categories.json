@@ -86,5 +86,31 @@
     "id": "43d54184-a807-42b0-92e0-d5d375bc2958",
     "createdAt": "2025-12-23T19:53:24.435Z",
     "updatedAt": "2025-12-23T19:53:24.435Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T08:30:22.065Z",
+    "id": "ca8c2488-abaa-4700-8b56-ea9b30c1adff",
+    "createdAt": "2025-12-24T08:30:22.066Z",
+    "updatedAt": "2025-12-24T08:30:22.066Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T08:30:40.851Z",
+    "id": "c34eff0f-a825-4573-b84c-1ebc339e123c",
+    "createdAt": "2025-12-24T08:30:40.852Z",
+    "updatedAt": "2025-12-24T08:30:40.852Z"
   }
 ]
