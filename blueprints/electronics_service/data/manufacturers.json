@@ -1,0 +1,33 @@
+
+[
+  {
+    "id": "1",
+    "name": "Legrand",
+    "country": "Франция",
+    "foundedYear": 1865,
+    "qualityRating": 5,
+    "isCertified": true,
+    "productLines": ["розетки", "выключатели", "щитовое оборудование"],
+    "createdAt": "2024-01-10T12:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "name": "Schneider Electric",
+    "country": "Франция",
+    "foundedYear": 1836,
+    "qualityRating": 5,
+    "isCertified": true,
+    "productLines": ["автоматика", "управление", "силовое оборудование"],
+    "createdAt": "2024-01-11T10:30:00.000Z"
+  },
+  {
+    "id": "3",
+    "name": "ABB",
+    "country": "Швейцария",
+    "foundedYear": 1988,
+    "qualityRating": 4,
+    "isCertified": true,
+    "productLines": ["низковольтное оборудование", "автоматизация"],
+    "createdAt": "2024-01-12T15:20:00.000Z"
+  }
+]
