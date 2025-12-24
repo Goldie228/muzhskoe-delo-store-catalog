@@ -86,5 +86,57 @@
     "id": "43d54184-a807-42b0-92e0-d5d375bc2958",
     "createdAt": "2025-12-23T19:53:24.435Z",
     "updatedAt": "2025-12-23T19:53:24.435Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T07:16:24.718Z",
+    "id": "117a5c85-7f98-4996-ac8f-814917f310e7",
+    "createdAt": "2025-12-24T07:16:24.720Z",
+    "updatedAt": "2025-12-24T07:16:24.720Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T07:17:44.344Z",
+    "id": "43a37592-0e40-4c03-b410-fd5895b050be",
+    "createdAt": "2025-12-24T07:17:44.346Z",
+    "updatedAt": "2025-12-24T07:17:44.346Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T07:22:55.549Z",
+    "id": "bcfea90e-73f6-4551-b226-7ff9f8b56faa",
+    "createdAt": "2025-12-24T07:22:55.551Z",
+    "updatedAt": "2025-12-24T07:22:55.551Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-24T07:23:04.092Z",
+    "id": "8484efc3-8caf-43be-a33e-64d0dad6c0ee",
+    "createdAt": "2025-12-24T07:23:04.094Z",
+    "updatedAt": "2025-12-24T07:23:04.094Z"
   }
 ]

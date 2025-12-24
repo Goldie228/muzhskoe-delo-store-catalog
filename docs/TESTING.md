@@ -3,410 +3,195 @@
 
 ## 📋 Обзор
 
-В этом документе описаны подходы к тестированию приложений на нашем фреймворке, включая настройку тестовой среды, написание тестов и лучшие практики.
+В проекте используется фреймворк **Jest** для модульного тестирования и **Supertest** для тестирования HTTP-эндпоинтов. Тесты разделены на два уровня:
+1.  **Unit-тесты (Core & Lib)**: Тестируют изолированные классы (Router, FileManager, App) с использованием моков.
+2.  **Integration-тесты (Blueprints)**: Тестируют API модулей через HTTP-запросы.
 
-## 🛠️ Инструменты тестирования
-
-### Jest
-Основной фреймворк для тестирования, настроенный в проекте:
+## 🛠️ Запуск тестов
 
 ```bash
-# Запуск всех тестов
+# Все тесты
 npm test
 
-# Запуск тестов с покрытием кода
+# С покрытием кода
 npm run test:coverage
 
-# Запуск тестов в режиме наблюдения
+# Режим наблюдения
 npm run test:watch
 
-# Запуск только тестов ядра
+# Только для ядра
 npm run test:core
-
-# Запуск только тестов модулей
-npm run test:blueprints
 ```
 
-### Supertest
-Библиотека для тестирования HTTP-эндпоинтов:
+## 📁 Структура тестов
+
+```
+tests/                     # Тесты ядра фреймворка
+├── App.test.js           # Тесты класса App, middleware, error handling
+├── Router.test.js        # Логика маршрутизации и парсинга URL
+├── FileManager.test.js   # Логика работы с файловой системой (с моками)
+├── Request.test.js       # Парсинг входящих запросов
+├── Response.test.js      # Формирование ответов
+├── setup.js              # Глобальная настройка (моки console)
+└── teardown.js           # Очистка после тестов
+
+blueprints/<service>/__tests__/   # Интеграционные тесты модулей
+├── products.test.js     # Проверка CRUD эндпоинтов через Supertest
+└── categories.test.js
+```
+
+---
+
+## 🧪 Написание Unit-тестов (Core & Lib)
+
+Для тестирования утилит (`FileManager`, `DataGenerator`) и классов ядра (`Router`) **не используйте** реальную файловую систему или сетевые запросы. Всегда применяйте моки.
+
+### Пример: Тестирование FileManager с моками
+
+Вместо создания реальных файлов, мы мокаем модуль `fs`:
 
 ```javascript
-const request = require('supertest');
-const app = require('./core/App');
+const fs = require('fs');
+const { FileManager } = require('../lib/fileManager');
 
-describe('API Tests', () => {
-  test('должен возвращать список пользователей', async () => {
-    const response = await request(app)
-      .get('/api/users')
-      .expect(200);
+// Мокаем модуль fs
+jest.mock('fs', () => ({
+  promises: {
+    mkdir: jest.fn(),
+    readFile: jest.fn(),
+    writeFile: jest.fn(),
+    rename: jest.fn(),
+    unlink: jest.fn(),
+  }
+}));
+
+describe('FileManager Unit Tests', () => {
+  let mockReadFile;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Получаем доступ к замоканым функциям для настройки сценариев
+    mockReadFile = fs.promises.readFile;
+  });
+
+  test('должен возвращать пустой массив, если файл не найден', async () => {
+    // Настраиваем поведение мока: эмулируем ошибку ENOENT
+    mockReadFile.mockRejectedValue({ code: 'ENOENT' });
     
-    expect(response.body.success).toBe(true);
-    expect(Array.isArray(response.body.data)).toBe(true);
+    const fm = new FileManager();
+    const data = await fm.readJSON('any-file.json');
+    
+    expect(data).toEqual([]);
   });
 });
 ```
 
-## 🏗️ Структура тестов
+### Пример: Тестирование ErrorHandler
 
-### Тесты ядра фреймворка
-Тесты основных компонентов фреймворка расположены в папке `tests/`:
+При тестировании `App.js` важно проверить, что кастомный обработчик ошибок вызывается корректно:
 
-```
-tests/
-├── App.test.js           # Тесты класса App
-├── Router.test.js        # Тесты маршрутизатора
-├── Request.test.js       # Тесты объекта запроса
-├── Response.test.js      # Тесты объекта ответа
-├── setup.js              # Настройка тестовой среды
-└── teardown.js           # Очистка после тестов
-```
+```javascript
+const App = require('../../core/App');
 
-### Тесты модулей (blueprints)
-Тесты каждого модуля располагаются в папке `blueprints/<имя>_service/__tests__/`:
+describe('App Error Handling', () => {
+  test('должен использовать кастомный setErrorHandler', async () => {
+    const app = new App();
+    const customHandler = jest.fn((err, req, res, next) => {
+      res.status(500).json({ error: err.message });
+    });
 
-```
-blueprints/
-├── food_service/
-│   └── __tests__/
-│       ├── products.test.js
-│       └── categories.test.js
-├── electronics_service/
-│   └── __tests__/
-│       ├── devices.test.js
-│       └── manufacturers.test.js
+    app.setErrorHandler(customHandler);
+    app.get('/fail', (req, res, next) => next(new Error('Test')));
+
+    // ... здесь создаем мок req/res и вызываем app._handleRequest ...
+    
+    expect(customHandler).toHaveBeenCalled();
+  });
+});
 ```
 
-## 📝 Написание тестов
+---
 
-### Тестирование контроллеров
+## 🌐 Написание Integration-тестов (Blueprints)
+
+Для тестирования API модулей (`blueprints`) используйте **Supertest**. Мы проверяем реальные HTTP-ответы.
+
+### Важное отличие от продакшена
+В тестах **не нужно** запускать `server.js`. Мы создаем экземпляр `App` и загружаем маршруты напрямую. Это позволяет тестировать API в полной изоляции, без накладных расходов HTTP-сервера.
 
 ```javascript
 const request = require('supertest');
 const App = require('../../../core/App');
 const bodyParser = require('../../../core/middleware/bodyParser');
-const { errorHandler } = require('../../../core/middleware/errorHandler');
 
-describe('Контроллер продуктов', () => {
+describe('API Блюд (Integration)', () => {
   let app;
-  
+
+  // beforeAll выполняется 1 раз перед всеми тестами в этом блоке
   beforeAll(() => {
     app = new App();
+    
+    // Подключаем middleware, как в реальном приложении
     app.use(bodyParser());
-    app.use(errorHandler());
     
-    // Загружаем маршруты нашего модуля
-    require('../routes/products.routes.js')(app);
+    // Регистрируем маршруты нашего сервиса
+    require('../routes/dishes.routes.js')(app);
   });
 
-  describe('GET /api/products', () => {
-    test('должен возвращать все продукты', async () => {
-      const response = await request(app)
-        .get('/api/products')
-        .expect(200);
-      
-      expect(response.body.success).toBe(true);
-      expect(Array.isArray(response.body.data)).toBe(true);
-      expect(response.body.total).toBeDefined();
-    });
-  });
-
-  describe('POST /api/products', () => {
-    test('должен создавать новый продукт', async () => {
-      const newProduct = {
-        name: 'Тестовый продукт',
-        price: 999.99,
-        available: true
-      };
+  describe('POST /api/food', () => {
+    test('создает блюдо и возвращает 201', async () => {
+      const newDish = { name: 'Тест', price: 100, inStock: true };
 
       const response = await request(app)
-        .post('/api/products')
-        .send(newProduct)
+        .post('/api/food')
+        .send(newDish)
+        .expect('Content-Type', /json/)
         .expect(201);
-      
+
       expect(response.body.success).toBe(true);
-      expect(response.body.data.name).toBe(newProduct.name);
-      expect(response.body.data.id).toBeDefined();
-    });
-
-    test('должен возвращать 400 для отсутствующих обязательных полей', async () => {
-      const invalidProduct = {
-        price: 999.99
-      };
-
-      const response = await request(app)
-        .post('/api/products')
-        .send(invalidProduct)
-        .expect(400);
-      
-      expect(response.body.error).toBe(true);
-      expect(response.body.message).toContain('обязательны');
+      expect(response.body.data).toHaveProperty('id');
     });
   });
 });
 ```
 
-### Тестирование сервисов
+---
 
-```javascript
-const ProductsService = require('../services/ProductsService');
-const { fileManager } = require('../../../lib/fileManager');
+## 🔧 Покрытие кода
 
-describe('Сервис продуктов', () => {
-  const testDataFile = 'test-products.json';
-  let service;
-
-  beforeAll(async () => {
-    // Создаем тестовый файл с данными
-    await fileManager.writeJSON(testDataFile, [
-      { id: '1', name: 'Продукт 1', price: 100, available: true },
-      { id: '2', name: 'Продукт 2', price: 200, available: false }
-    ]);
-    
-    service = new ProductsService(testDataFile);
-  });
-
-  afterAll(async () => {
-    // Удаляем тестовый файл
-    // В реальном проекте здесь может быть очистка временных файлов
-  });
-
-  describe('findAll', () => {
-    test('должен возвращать все продукты', async () => {
-      const products = await service.findAll();
-      expect(products).toHaveLength(2);
-      expect(products[0].name).toBe('Продукт 1');
-    });
-  });
-
-  describe('findById', () => {
-    test('должен возвращать продукт по ID', async () => {
-      const product = await service.findById('1');
-      expect(product.name).toBe('Продукт 1');
-    });
-
-    test('должен возвращать null для несуществующего ID', async () => {
-      const product = await service.findById('999');
-      expect(product).toBeNull();
-    });
-  });
-
-  describe('create', () => {
-    test('должен создавать новый продукт', async () => {
-      const newProduct = {
-        name: 'Новый продукт',
-        price: 300,
-        available: true
-      };
-
-      const created = await service.create(newProduct);
-      expect(created.id).toBeDefined();
-      expect(created.name).toBe(newProduct.name);
-      expect(created.createdAt).toBeDefined();
-    });
-  });
-});
-```
-
-### Тестирование утилит
-
-```javascript
-const { fileManager } = require('../../../lib/fileManager');
-
-describe('Менеджер файлов', () => {
-  const testFile = 'test-data.json';
-
-  afterAll(async () => {
-    // Очистка тестовых данных
-    try {
-      await fs.unlink(testFile);
-    } catch (e) {
-      // Игнорируем ошибку, если файл не существует
-    }
-  });
-
-  describe('readJSON', () => {
-    test('должен возвращать пустой массив для несуществующего файла', async () => {
-      const data = await fileManager.readJSON('non-existent-file.json');
-      expect(data).toEqual([]);
-    });
-
-    test('должен парсить JSON файл', async () => {
-      await fs.writeFile(testFile, '[{"name": "test"}]');
-      const data = await fileManager.readJSON(testFile);
-      expect(data).toEqual([{ name: 'test' }]);
-    });
-  });
-
-  describe('writeJSON', () => {
-    test('должен записывать данные в файл', async () => {
-      const testData = [{ name: 'test' }];
-      await fileManager.writeJSON(testFile, testData);
-      
-      const content = await fs.readFile(testFile, 'utf8');
-      expect(JSON.parse(content)).toEqual(testData);
-    });
-  });
-});
-```
-
-## 🔧 Настройка тестовой среды
-
-### Глобальная настройка
-
-Файл `tests/setup.js` выполняется перед всеми тестами:
-
-```javascript
-// Глобальная настройка для всех тестов
-process.env.NODE_ENV = 'test';
-
-// Увеличиваем таймауты для тестов
-jest.setTimeout(10000);
-
-// Мокаем console методы, чтобы не засорять вывод тестов
-beforeAll(() => {
-  jest.spyOn(console, 'log').mockImplementation(() => {});
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
-
-// Восстанавливаем после всех тестов
-afterAll(() => {
-  console.log.mockRestore();
-  console.warn.mockRestore();
-  console.error.mockRestore();
-});
-```
-
-### Очистка после тестов
-
-Файл `tests/teardown.js` выполняется после всех тестов:
-
-```javascript
-module.exports = async () => {
-  // Очистка после всех тестов
-  console.log('\n✅ Все тесты завершены');
-};
-```
-
-## 📊 Покрытие кода
-
-Для запуска тестов с покрытием кода:
+Цель проекта — покрытие кода выше **90%** для папок `core/` и `lib/`.
 
 ```bash
 npm run test:coverage
 ```
 
-Результаты будут сохранены в папке `coverage/` и доступны в HTML-формате.
-
-### Игнорирование файлов в покрытии
-
-В файле `jest.config.js` можно настроить исключение файлов из покрытия:
-
+**Файл конфигурации (`jest.config.js`):**
 ```javascript
 collectCoverageFrom: [
   'core/**/*.js',
   'lib/**/*.js',
-  '!**/node_modules/**',
-  '!**/tests/**'
+  '!**/node_modules/**'
 ],
 ```
 
-## 🎯 Лучшие практики
+---
 
-### 1. Изоляция тестов
-Каждый тест должен быть независимым от других:
+## ⚠️ Частые ошибки
 
+### 1. Использование `server.js` в тестах
+**Неправильно:**
 ```javascript
-// Плохо: зависимость от предыдущего теста
-test('создать продукт', async () => {
-  // создаем продукт
-  const product = await service.create({ name: 'Test' });
-  expect(product.id).toBeDefined();
-});
-
-test('получить продукт', async () => {
-  // зависим от предыдущего теста
-  const product = await service.findById(product.id);
-  expect(product.name).toBe('Test');
-});
-
-// Хорошо: независимые тесты
-test('создать продукт', async () => {
-  const product = await service.create({ name: 'Test' });
-  expect(product.id).toBeDefined();
-});
-
-test('получить продукт', async () => {
-  // создаем продукт для этого теста
-  const created = await service.create({ name: 'Test' });
-  const product = await service.findById(created.id);
-  expect(product.name).toBe('Test');
-});
+const server = require('../../server'); // Не делайте так!
 ```
+Это запустит реальный сервер на порту, что может привести к конфликтам `EADDRINUSE`. Используйте `new App()`.
 
-### 2. Тестирование граничных случаев
-Проверяйте не только успешные сценарии:
+### 2. Очистка тестовых данных
+Integration-тесты пишут реальные данные в JSON файлы в `blueprints/*/data/`. Убедитесь, что ваши тесты либо удаляют созданные данные в `afterEach`, либо используют уникальные ID, чтобы не мешать другим тестам.
 
+### 3. Отсутствие `await`
+Jest не ждет завершения теста, если вы забудете `await` перед асинхронными операциями:
 ```javascript
-describe('findById', () => {
-  test('должен возвращать продукт для валидного ID', async () => {
-    const product = await service.findById('1');
-    expect(product).toBeDefined();
-  });
-
-  test('должен возвращать null для несуществующего ID', async () => {
-    const product = await service.findById('non-existent');
-    expect(product).toBeNull();
-  });
-
-  test('должен обрабатывать null ID', async () => {
-    await expect(service.findById(null)).rejects.toThrow();
-  });
-});
-```
-
-### 3. Мокирование внешних зависимостей
-Используйте моки для изоляции от внешних систем:
-
-```javascript
-jest.mock('fs', () => ({
-  promises: {
-    readFile: jest.fn(),
-    writeFile: jest.fn()
-  }
-}));
-
-const fs = require('fs');
-
-test('должен читать файл', async () => {
-  fs.promises.readFile.mockResolvedValue('{"test": true}');
-  
-  const data = await fileManager.readJSON('test.json');
-  expect(data).toEqual({ test: true });
-});
-```
-
-### 4. Использование beforeEach/afterEach
-Для подготовки и очистки данных между тестами:
-
-```javascript
-describe('Тесты сервиса', () => {
-  let service;
-
-  beforeEach(async () => {
-    // Подготовка данных перед каждым тестом
-    await fileManager.writeJSON('test.json', []);
-    service = new Service('test.json');
-  });
-
-  afterEach(async () => {
-    // Очистка после каждого теста
-    await fs.unlink('test.json');
-  });
-
-  test('должен создавать элемент', async () => {
-    const item = await service.create({ name: 'Test' });
-    expect(item.id).toBeDefined();
-  });
+test('пример', async () => {
+  await request(app).get('/'); // Не забудьте await
 });
 ```

@@ -36,32 +36,12 @@ class Server {
     // Загрузка всех blueprints
     await this._loadBlueprints();
 
-    // Обработка 404 (после всех маршрутов)
-    this.app.use((req, res) => {
-      // res — наш Response wrapper; ожидаем .status/.json
-      if (typeof res.status === 'function' && typeof res.json === 'function') {
-        return res.status(404).json({
-          error: true,
-          message: `Маршрут ${req.method} ${req.url} не найден`,
-          status: 404
-        });
-      }
-      // fallback для нативного res
-      res.statusCode = 404;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.end(JSON.stringify({
-        error: true,
-        message: `Маршрут ${req.method} ${req.url} не найден`,
-        status: 404
-      }));
-    });
-
-    // Placeholder для совместимости — реальная обработка ошибок идёт через setErrorHandler
-    if (typeof this.app.use === 'function') {
-      this.app.use((req, res, next) => {
-        if (typeof next === 'function') next();
-      });
-    }
+    // --- ИСПРАВЛЕНИЕ ---
+    // Блок обработки 404 через middleware удален.
+    // В текущей архитектуре App.js middleware выполняются до роутинга.
+    // Данный блок перехватывал все запросы и отправлял 404, блокируя API.
+    // Теперь ответственность за 404 лежит на логике внутри core/App.js.
+    // --------------------
   }
 
   /*
@@ -137,7 +117,7 @@ class Server {
 \x1b[36m[INFO]\x1b[0m Порт: ${this.port}
 \x1b[36m[INFO]\x1b[0m Модули: динамически загружены из ${this.blueprintsDir}
 \x1b[36m[INFO]\x1b[0m Документация API: см. README.md
-\x1b[36m[INFO]\x1b[0m Пример запроса: curl http://localhost:${this.port}/api/example
+\x1b[36m[INFO]\x1b[0m Пример запроса: curl http://localhost:${this.port}/api/food
       `);
     });
 
