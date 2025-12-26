@@ -110,9 +110,6 @@ class Response {
 
   /**
    * Отправка статического файла из файловой системы.
-   * Автоматически определяет Content-Type по расширению файла.
-   * @param {string} filePath - Абсолютный путь к файлу
-   * @returns {Response}
    */
   sendFile(filePath) {
     const ext = path.extname(filePath).toLowerCase();
@@ -126,6 +123,14 @@ class Response {
     });
 
     stream.on('error', (err) => {
+      // Если заголовки уже отправлены (началась передача файла), не можем отправить JSON ошибку
+      if (this._res.headersSent) {
+        console.error(`\x1b[31m[ERROR]\x1b[0m Ошибка потока файла ${filePath} после начала передачи:`, err);
+        stream.destroy();
+        this._res.end(); // Просто закрываем соединение
+        return;
+      }
+
       if (err.code === 'ENOENT') {
         this.status(404).send('Файл не найден');
       } else if (err.code === 'EACCES') {
@@ -136,7 +141,6 @@ class Response {
       }
     });
 
-    // Если поток завершается успешно, завершаем ответ
     stream.on('end', () => {
       this._end();
     });
@@ -148,9 +152,7 @@ class Response {
     if (!this.finished && !this._res.writableEnded) {
       try {
         this._res.end();
-      } catch (e) {
-        // игнорируем ошибки при завершении
-      }
+      } catch (e) {}
     }
     this.finished = true;
   }
