@@ -1,5 +1,7 @@
+
 const App = require('./core/App');
 const bodyParser = require('./core/middleware/bodyParser');
+const staticMiddleware = require('./core/middleware/static');
 const { errorHandler } = require('./core/middleware/errorHandler');
 const fs = require('fs').promises;
 const path = require('path');
@@ -24,7 +26,10 @@ class Server {
    * Регистрирует middleware, загружает маршруты и настраивает обработку ошибок
    */
   async setup() {
-    // Глобальные middleware
+    // 1. Статические файлы (CSS, JS, HTML) - ПЕРВЫМ, чтобы не парсить body для картинок
+    this.app.use(staticMiddleware('public'));
+
+    // 2. Парсер тела запроса (для API)
     this.app.use(bodyParser());
 
     // Передаём error handler в App, чтобы он вызывался при ошибках в обработчике
@@ -115,8 +120,8 @@ class Server {
 \x1b[32m[SUCCESS]\x1b[0m Сервер успешно запущен!
 \x1b[36m[INFO]\x1b[0m Порт: ${this.port}
 \x1b[36m[INFO]\x1b[0m Модули: динамически загружены из ${this.blueprintsDir}
+\x1b[36m[INFO]\x1b[0m Фронтенд: включен (public/)
 \x1b[36m[INFO]\x1b[0m Документация API: см. README.md
-\x1b[36m[INFO]\x1b[0m Пример запроса: curl http://localhost:${this.port}/api/food
       `);
     });
 
