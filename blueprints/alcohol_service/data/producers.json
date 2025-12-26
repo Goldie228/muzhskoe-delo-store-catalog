@@ -1,0 +1,41 @@
+[
+  {
+    "id": "prod_001",
+    "name": "The Absolut Company",
+    "country": "Швеция",
+    "foundedYear": 1879,
+    "rating": 5,
+    "isActive": true,
+    "establishedDate": "1879-04-01T00:00:00.000Z",
+    "brands": ["Absolut", "Level Vodka", "Ahus Vodka"],
+    "awards": ["Best Vodka 2020", "International Spirits Award 2021"],
+    "createdAt": "2023-01-15T10:30:00.000Z",
+    "updatedAt": "2023-01-15T10:30:00.000Z"
+  },
+  {
+    "id": "prod_002",
+    "name": "Московский винзавод \"Кристалл\"",
+    "country": "Россия",
+    "foundedYear": 1901,
+    "rating": 4,
+    "isActive": true,
+    "establishedDate": "1901-06-15T00:00:00.000Z",
+    "brands": ["Гинзек", "Столичная", "Путинка"],
+    "awards": ["Best Russian Gin 2022", "Moscow Quality Award"],
+    "createdAt": "2023-01-15T10:30:00.000Z",
+    "updatedAt": "2023-01-15T10:30:00.000Z"
+  },
+  {
+    "id": "prod_003",
+    "name": "ОАО \"Балтика\"",
+    "country": "Россия",
+    "foundedYear": 1990,
+    "rating": 4,
+    "isActive": true,
+    "establishedDate": "1990-09-01T00:00:00.000Z",
+    "brands": ["Балтика", "Арсенальное", "Трехсосенское"],
+    "awards": ["Best Beer Brand 2021", "Russian Beer Award"],
+    "createdAt": "2023-01-15T10:30:00.000Z",
+    "updatedAt": "2023-01-15T10:30:00.000Z"
+  }
+]
