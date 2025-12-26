@@ -1,0 +1,82 @@
+Модуль алкогольной продукции (Alcohol Service)
+📋 Обзор
+Модуль alcohol_service реализует API для управления алкогольной продукцией и производителями в проекте "Мужское дело".
+
+🏗️ Архитектура
+Модуль построен по паттерну MVC:
+
+Services: Бизнес-логика и работа с JSON-файлами (BeveragesService, ProducersService).
+Controllers: Обработка HTTP-запросов и ответов.
+Routes: Определение эндпоинтов API.
+🍷 Сущности
+1. Напиток (Beverage)
+   name: Название напитка (string)
+   type: Тип напитка (string)
+   price: Цена (number)
+   strength: Крепость в процентах (number)
+   volume: Объем в миллилитрах (number)
+   inStock: Наличие в магазине (boolean)
+   productionDate: Дата производства (Date)
+   ingredients: Ингредиенты (Array)
+   tags: Теги для поиска и классификации (Array)
+2. Производитель (Producer)
+   name: Название производителя (string)
+   country: Страна происхождения (string)
+   foundedYear: Год основания (number)
+   rating: Рейтинг производителя (1-5) (number)
+   isActive: Активен ли производитель (boolean)
+   establishedDate: Дата регистрации (Date)
+   brands: Список брендов производителя (Array)
+   awards: Награды и достижения (Array)
+   🌐 Эндпоинты
+   Напитки
+   GET /api/alcohol/beverages — Получить все напитки
+   GET /api/alcohol/beverages/:id — Получить напиток по ID
+   POST /api/alcohol/beverages — Создать напиток
+   PUT /api/alcohol/beverages/:id — Обновить напиток
+   DELETE /api/alcohol/beverages/:id — Удалить напиток
+   GET /api/alcohol/beverages/type/:type — Получить напитки по типу
+   GET /api/alcohol/beverages/strength?min=X&max=Y — Получить напитки по диапазону крепости
+   GET /api/alcohol/beverages/instock — Получить напитки в наличии
+   GET /api/alcohol/beverages/tag/:tag — Получить напитки по тегу
+   Производители
+   GET /api/alcohol/producers — Получить всех производителей
+   GET /api/alcohol/producers/:id — Получить производителя по ID
+   POST /api/alcohol/producers — Создать производителя
+   PUT /api/alcohol/producers/:id — Обновить производителя
+   DELETE /api/alcohol/producers/:id — Удалить производителя
+   GET /api/alcohol/producers/country/:country — Получить производителей по стране
+   GET /api/alcohol/producers/active — Получить активных производителей
+   GET /api/alcohol/producers/rating?minRating=X — Получить производителей с рейтингом не ниже X
+   GET /api/alcohol/producers/brand/:brand — Получить производителей по бренду
+   💻 Примеры запросов
+   Создание напитка
+   curl -X POST http://localhost:3000/api/alcohol/beverages \
+   -H "Content-Type: application/json" \
+   -d '{
+   "name": "Хеннесси XO",
+   "type": "коньяк",
+   "price": 15000,
+   "strength": 40,
+   "volume": 700,
+   "inStock": true,
+   "ingredients": ["виноградный спирт", "вода", "дубовая кора"],
+   "tags": ["премиум", "французский", "долгая выдержка"]
+   }'
+   Поиск напитков по диапазону крепости
+   curl http://localhost:3000/api/alcohol/beverages/strength?min=40&max=50
+   Создание производителя
+
+curl -X POST http://localhost:3000/api/alcohol/producers \
+-H "Content-Type: application/json" \
+-d '{
+"name": "Martell & Co",
+"country": "Франция",
+"foundedYear": 1715,
+"rating": 5,
+"isActive": true,
+"brands": ["Martell", "Martell Cordon Bleu"],
+"awards": ["Best Cognac 2021", "International Spirits Award"]
+}'
+Поиск производителей по стране
+curl http://localhost:3000/api/alcohol/producers/country/Франция
