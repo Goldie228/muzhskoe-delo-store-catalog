@@ -7,8 +7,15 @@
     "rating": 5,
     "isActive": true,
     "establishedDate": "1879-04-01T00:00:00.000Z",
-    "brands": ["Absolut", "Level Vodka", "Ahus Vodka"],
-    "awards": ["Best Vodka 2020", "International Spirits Award 2021"],
+    "brands": [
+      "Absolut",
+      "Level Vodka",
+      "Ahus Vodka"
+    ],
+    "awards": [
+      "Best Vodka 2020",
+      "International Spirits Award 2021"
+    ],
     "createdAt": "2023-01-15T10:30:00.000Z",
     "updatedAt": "2023-01-15T10:30:00.000Z"
   },
@@ -20,8 +27,15 @@
     "rating": 4,
     "isActive": true,
     "establishedDate": "1901-06-15T00:00:00.000Z",
-    "brands": ["Гинзек", "Столичная", "Путинка"],
-    "awards": ["Best Russian Gin 2022", "Moscow Quality Award"],
+    "brands": [
+      "Гинзек",
+      "Столичная",
+      "Путинка"
+    ],
+    "awards": [
+      "Best Russian Gin 2022",
+      "Moscow Quality Award"
+    ],
     "createdAt": "2023-01-15T10:30:00.000Z",
     "updatedAt": "2023-01-15T10:30:00.000Z"
   },
@@ -33,9 +47,80 @@
     "rating": 4,
     "isActive": true,
     "establishedDate": "1990-09-01T00:00:00.000Z",
-    "brands": ["Балтика", "Арсенальное", "Трехсосенское"],
-    "awards": ["Best Beer Brand 2021", "Russian Beer Award"],
+    "brands": [
+      "Балтика",
+      "Арсенальное",
+      "Трехсосенское"
+    ],
+    "awards": [
+      "Best Beer Brand 2021",
+      "Russian Beer Award"
+    ],
     "createdAt": "2023-01-15T10:30:00.000Z",
     "updatedAt": "2023-01-15T10:30:00.000Z"
+  },
+  {
+    "name": "Тестовый производитель",
+    "country": "Россия",
+    "foundedYear": 2020,
+    "rating": 5,
+    "isActive": true,
+    "brands": [
+      "Тестовый бренд"
+    ],
+    "awards": [
+      "Тестовая награда"
+    ],
+    "id": "64cad2c8-466d-4397-a3b6-a07a79a10fe9",
+    "createdAt": "2025-12-26T08:10:19.331Z",
+    "updatedAt": "2025-12-26T08:10:19.331Z"
+  },
+  {
+    "name": "Тестовый производитель",
+    "country": "Россия",
+    "foundedYear": 2020,
+    "rating": 5,
+    "isActive": true,
+    "brands": [
+      "Тестовый бренд"
+    ],
+    "awards": [
+      "Тестовая награда"
+    ],
+    "id": "e044be80-3791-429a-9ff6-955985276611",
+    "createdAt": "2025-12-26T08:11:17.298Z",
+    "updatedAt": "2025-12-26T08:11:17.298Z"
+  },
+  {
+    "name": "Тестовый производитель",
+    "country": "Россия",
+    "foundedYear": 2020,
+    "rating": 5,
+    "isActive": true,
+    "brands": [
+      "Тестовый бренд"
+    ],
+    "awards": [
+      "Тестовая награда"
+    ],
+    "id": "d682b7a7-41e3-445e-bed9-7220312b4b48",
+    "createdAt": "2025-12-26T08:11:38.799Z",
+    "updatedAt": "2025-12-26T08:11:38.799Z"
+  },
+  {
+    "name": "Тестовый производитель",
+    "country": "Россия",
+    "foundedYear": 2020,
+    "rating": 5,
+    "isActive": true,
+    "brands": [
+      "Тестовый бренд"
+    ],
+    "awards": [
+      "Тестовая награда"
+    ],
+    "id": "bdba16b7-110e-4b30-8216-1a7774f1f8f9",
+    "createdAt": "2025-12-26T09:04:42.160Z",
+    "updatedAt": "2025-12-26T09:04:42.160Z"
   }
 ]
