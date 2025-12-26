@@ -229,5 +229,18 @@
     "id": "a66249e6-11ba-40fb-9ede-ce0837f8329a",
     "createdAt": "2025-12-24T13:43:49.029Z",
     "updatedAt": "2025-12-24T13:43:49.029Z"
+  },
+  {
+    "title": "Напитки",
+    "sortOrder": 10,
+    "isVisible": true,
+    "synonyms": [
+      "вода",
+      "сок"
+    ],
+    "lastModified": "2025-12-26T09:04:42.285Z",
+    "id": "a12348c1-1e59-4d0f-b24e-fba653223416",
+    "createdAt": "2025-12-26T09:04:42.286Z",
+    "updatedAt": "2025-12-26T09:04:42.286Z"
   }
 ]
