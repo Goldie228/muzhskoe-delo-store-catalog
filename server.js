@@ -3,6 +3,7 @@ const App = require('./core/App');
 const bodyParser = require('./core/middleware/bodyParser');
 const staticMiddleware = require('./core/middleware/static');
 const { errorHandler } = require('./core/middleware/errorHandler');
+const { authMiddleware } = require('./core/middleware/auth'); // Путь к файлу auth.js
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -10,57 +11,67 @@ require('dotenv').config();
 
 /*
  * Класс Server - основной класс для запуска и управления сервером приложения
- * Отвечает за настройку middleware, загрузку маршрутов и запуск HTTP-сервера
  */
 class Server {
   constructor() {
     this.app = new App();
     this.port = process.env.PORT || 3000;
-    // Жёстко привязываем папку blueprints рядом с server.js
     this.blueprintsDir = path.join(__dirname, 'blueprints');
-    this._errorHandler = errorHandler(); // экземпляр глобального обработчика
+    this._errorHandler = errorHandler();
   }
 
   /*
-   * Настройка приложения перед запуском
-   * Регистрирует middleware, загружает маршруты и настраивает обработку ошибок
+   * Единый метод настройки.
+   * Содержит: статику, парсер, админ-логику, загрузку роутов.
    */
   async setup() {
-    // 1. Статические файлы (CSS, JS, HTML) - ПЕРВЫМ, чтобы не парсить body для картинок
+    // 1. Статические файлы
     this.app.use(staticMiddleware('public'));
 
-    // 2. Парсер тела запроса (для API)
+    // 2. Парсер тела запроса
     this.app.use(bodyParser());
 
-    // Передаём error handler в App, чтобы он вызывался при ошибках в обработчике
+    // 3. Публичный роут для авторизации
+    this.app.post('/api/auth/login', (req, res) => {
+        const { login, password } = req.body;
+        
+        if (login === process.env.ADMIN_LOGIN && password === process.env.ADMIN_PASSWORD) {
+            res.json({
+                success: true,
+                token: process.env.ADMIN_TOKEN
+            });
+        } else {
+            res.status(401).json({
+                success: false,
+                message: 'Неверный логин или пароль'
+            });
+        }
+    });
+
+    // 4. Защищаем остальные API методы токеном
+    const adminGuard = authMiddleware(process.env.ADMIN_TOKEN);
+    this.app.use((req, res, next) => adminGuard(req, res, next));
+
+    // 5. Установка глобального обработчика ошибок
     if (typeof this.app.setErrorHandler === 'function') {
       this.app.setErrorHandler(this._errorHandler);
     }
 
-    // Загрузка всех blueprints
+    // 6. Загрузка всех blueprints
     await this._loadBlueprints();
-
-    // --- ИСПРАВЛЕНИЕ ---
-    // Блок обработки 404 через middleware удален.
-    // В текущей архитектуре App.js middleware выполняются до роутинга.
-    // Данный блок перехватывал все запросы и отправлял 404, блокируя API.
-    // Теперь ответственность за 404 лежит на логике внутри core/App.js.
-    // --------------------
   }
 
   /*
-   * Динамическая загрузка всех blueprints из директории blueprints
-   * Ищет подпапки и загружает маршруты из каждой
+   * Динамическая загрузка всех blueprints
    */
   async _loadBlueprints() {
     try {
       const items = await fs.readdir(this.blueprintsDir, { withFileTypes: true });
       const dirs = items.filter(d => d.isDirectory()).map(d => d.name);
 
-      const filtered = dirs.filter(name => !/template/i.test(name)); // пропускаем шаблоны
+      const filtered = dirs.filter(name => !/template/i.test(name));
       console.log(`\x1b[36m[INFO]\x1b[0m Найдено ${filtered.length} модулей: ${filtered.join(', ')}`);
 
-      // Загружаем последовательно (порядок может иметь значение)
       for (const dir of filtered) {
         await this._loadBlueprint(dir);
       }
@@ -71,7 +82,6 @@ class Server {
 
   /*
    * Загрузка одного blueprint
-   * @param {string} dirName - имя директории blueprint
    */
   async _loadBlueprint(dirName) {
     const blueprintPath = path.join(this.blueprintsDir, dirName);
@@ -84,14 +94,11 @@ class Server {
       for (const file of jsFiles) {
         const routePath = path.join(routesPath, file);
         try {
-          // В dev очищаем кеш, чтобы перезагрузка работала корректно
           if (process.env.NODE_ENV !== 'production') {
             try {
               const resolved = require.resolve(routePath);
               delete require.cache[resolved];
-            } catch (e) {
-              // ignore resolve errors
-            }
+            } catch (e) {}
           }
 
           const routeModule = require(routePath);
@@ -106,7 +113,6 @@ class Server {
         }
       }
     } catch (e) {
-      // Если нет папки routes или файлов — просто логируем и продолжаем
       console.warn(`\x1b[33m[WARN]\x1b[0m Маршруты не найдены для модуля ${dirName}:`, e && e.message ? e.message : e);
     }
   }
@@ -121,11 +127,10 @@ class Server {
 \x1b[36m[INFO]\x1b[0m Порт: ${this.port}
 \x1b[36m[INFO]\x1b[0m Модули: динамически загружены из ${this.blueprintsDir}
 \x1b[36m[INFO]\x1b[0m Фронтенд: включен (public/)
-\x1b[36m[INFO]\x1b[0m Документация API: см. README.md
+\x1b[36m[INFO]\x1b[0m Админка: #admin
       `);
     });
 
-    // Graceful shutdown
     process.on('SIGTERM', () => this.shutdown());
     process.on('SIGINT', () => this.shutdown());
   }
@@ -136,7 +141,6 @@ class Server {
   async shutdown() {
     console.log('\n\x1b[33m[INFO]\x1b[0m Завершение работы сервера...');
     try {
-      // Если App предоставляет close, ждём его
       if (typeof this.app.close === 'function') {
         await new Promise((resolve) => this.app.close(resolve));
       }
