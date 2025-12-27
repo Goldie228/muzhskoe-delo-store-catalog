@@ -219,7 +219,6 @@ const AdminForm = {
                 await api.put(`${ADMIN_CONFIG[moduleKey].endpoint}/${item.id}`, data);
             }
             AdminForm.close();
-            // Обновляем страницу (самый простой способ обновить таблицу)
             location.hash = '#admin/' + moduleKey;
         } catch (error) {
             alert('Ошибка сохранения: ' + error.message);
@@ -228,7 +227,7 @@ const AdminForm = {
 };
 
 /**
- * Глобальные функции для обработки событий (клики, отправка форм)
+ * Глобальные функции для обработки событий
  */
 window.handleLogin = async (e) => {
     e.preventDefault();
@@ -237,22 +236,13 @@ window.handleLogin = async (e) => {
     const password = form.password.value;
 
     try {
-        // Отправляем запрос
         const res = await api.post('/auth/login', { login, password });
-        
-        // Логируем ответ для отладки
         console.log('Ответ сервера при логине:', res);
-
-        // Проверяем, что ответ успешный И содержит токен
         if (res.success && res.token) {
-            // Сохраняем токен в память и localStorage (сессия)
             api.setToken(res.token);
-            
-            // Редирект на админку
             location.hash = '#admin';
         } else {
-            // Если 200, но success=false или token отсутствует
-            alert('Ошибка входа: ' + (res.message || 'Неверный формат ответа сервера'));
+            alert('Ошибка входа: ' + (res.message || 'Неверный формат ответа'));
         }
     } catch (err) {
         alert('Ошибка соединения или 401: ' + err.message);
@@ -263,7 +253,7 @@ window.deleteItem = async (moduleKey, id) => {
     if (!confirm('Вы уверены, что хотите удалить запись?')) return;
     try {
         await api.delete(ADMIN_CONFIG[moduleKey].endpoint + '/' + id);
-        location.reload();
+        location.hash = '#admin/' + moduleKey; // Перезагружаем страницу через хеш
     } catch (e) {
         alert('Ошибка удаления: ' + e.message);
     }
@@ -271,7 +261,6 @@ window.deleteItem = async (moduleKey, id) => {
 
 /**
  * Объект Views (ОБЪЕДИНЕННЫЙ)
- * Содержит и админ-страницы, и публичные страницы
  */
 const Views = {
     // --- Публичные страницы ---
@@ -405,8 +394,8 @@ const Views = {
     login: () => `
         <div class="login-container">
             <div class="login-card">
+                <svg style="display:block; margin:0 auto 1.5rem; color: var(--accent-color);" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 <h2>Вход для Администратора</h2>
-                <!-- Добавлен обработчик window.handleLogin -->
                 <form onsubmit="window.handleLogin(event)">
                     <div class="form-group">
                         <label>Логин</label>
@@ -414,9 +403,9 @@ const Views = {
                     </div>
                     <div class="form-group">
                         <label>Пароль</label>
-                        <input type="password" name="password" class="form-control" required placeholder="password">
+                        <input type="password" name="password" class="form-control" required placeholder="admin">
                     </div>
-                    <button type="submit" class="btn" style="width:100%">Войти</button>
+                    <button type="submit" class="btn" style="width:100%; margin-top:1rem;">Войти</button>
                 </form>
             </div>
         </div>
@@ -429,12 +418,21 @@ const Views = {
             return '';
         }
 
+        // Иконки для меню
+        const ICONS = {
+            food: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line></svg>',
+            electronics: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line></svg>',
+            alcohol: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8a2 2 0 0 0 2-2v-9.4a1 1 0 0 0-.4-.8l-3.6-2.4V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2.4l-3.6 2.4a1 1 0 0 0-.4.8V19a2 2 0 0 0 2 2z"></path></svg>',
+            philosophy: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>'
+        };
+
         // Если хеш просто '#admin', показываем выбор модулей
         if (location.hash === '#admin') {
             const keys = Object.keys(ADMIN_CONFIG);
             const menuItems = keys.map(k => `
                 <div class="card" style="padding:2rem; text-align:center; cursor:pointer;" onclick="window.location.hash='#admin/${k}'">
-                    <h3>${ADMIN_CONFIG[k].label}</h3>
+                    <div style="display:block; margin:0 auto 1rem; color: var(--accent-color);">${ICONS[k] || ''}</div>
+                    <h3 style="margin-top:0;">${ADMIN_CONFIG[k].label}</h3>
                 </div>
             `).join('');
 
@@ -443,7 +441,7 @@ const Views = {
                 <div class="items-grid" style="max-width:800px; margin:0 auto;">
                     ${menuItems}
                     <div class="card" style="padding:2rem; text-align:center; cursor:pointer; background:#fee2e2;" onclick="location.hash='#/'">
-                        <h3>Выход</h3>
+                        <h3 style="margin-top:0;">Выход</h3>
                     </div>
                 </div>
             `;
@@ -461,7 +459,7 @@ const Views = {
 
         const rows = items.map(item => `
             <tr>
-                <td>${item.id}</td>
+                <td style="font-family: monospace;">${item.id}</td>
                 <td><strong>${item.name || item.title}</strong></td>
                 <td>${item.price} BYN</td>
                 <td>
@@ -474,17 +472,34 @@ const Views = {
         return `
             <div class="admin-layout">
                 <div class="admin-sidebar">
-                    <div class="admin-menu-btn" onclick="location.hash='#admin'">← Меню</div>
+                    <div class="admin-menu-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <span>Админка</span>
+                    </div>
+                    
+                    <div class="admin-menu-btn" onclick="location.hash='#admin'">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="8 6 12 2 16 6"></polyline></svg>
+                        <span>Меню</span>
+                    </div>
+                    
                     ${Object.keys(ADMIN_CONFIG).map(k => `
                         <div class="admin-menu-btn ${k === currentModule ? 'active' : ''}" onclick="window.location.hash='#admin/${k}'">
-                            ${ADMIN_CONFIG[k].label}
+                            ${ICONS[k] || ''}
+                            <span>${ADMIN_CONFIG[k].label}</span>
                         </div>
                     `).join('')}
-                    <div class="admin-menu-btn" style="color:#ef4444; margin-top:2rem;" onclick="localStorage.removeItem('auth_token'); api.setToken(null); location.hash='#login'">Выход</div>
+
+                    <div class="admin-menu-btn logout" onclick="localStorage.removeItem('auth_token'); api.setToken(null); location.hash='#login'">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 20 21 8 3"></polyline><line x1="12" y1="1" x2="12" y2="23"></line></svg>
+                        <span>Выйти</span>
+                    </div>
                 </div>
                 <div class="admin-content">
+                    <div class="breadcrumb">
+                        <span>Главная</span> / <span>Админка</span> / <span>${config.label}</span>
+                    </div>
                     <div class="admin-header">
-                        <h2>Управление: ${config.label}</h2>
+                        <h2 style="margin:0;">Управление: ${config.label}</h2>
                         <button class="btn btn-add" onclick="AdminForm.open('create', null, '${currentModule}')">+ Добавить</button>
                     </div>
                     <table class="data-table">
@@ -497,7 +512,7 @@ const Views = {
                             </tr>
                         </thead>
                         <tbody>
-                            ${rows.length ? rows : '<tr><td colspan="4" style="text-align:center;">Данных нет</td></tr>'}
+                            ${rows.length ? rows : '<tr><td colspan="4" style="text-align:center; padding:2rem;">Данных нет</td></tr>'}
                         </tbody>
                     </table>
                 </div>
@@ -522,8 +537,21 @@ class Router {
 
     async handleRoute() {
         const hash = window.location.hash.slice(1) || '/';
-        const handler = this.routes[hash];
         const appEl = document.getElementById('app');
+        
+        // 1. Сначала ищем точное совпадение (например, '/', 'food')
+        let handler = this.routes[hash];
+        
+        // 2. Если точного совпадения нет, ищем по префиксу (например, 'admin' для 'admin/electronics')
+        if (!handler) {
+            const matchingKey = Object.keys(this.routes).find(key => {
+                // hash.startsWith(key + '/') — чтобы 'admin' не сработал для 'admins'
+                return hash === key || hash.startsWith(key + '/');
+            });
+            if (matchingKey) {
+                handler = this.routes[matchingKey];
+            }
+        }
 
         if (handler) {
             try {
@@ -558,4 +586,3 @@ router.addRoute('authors', Views.authors);
 router.addRoute('info', Views.info);
 router.addRoute('login', Views.login);
 router.addRoute('admin', Views.admin);
-// Админ-панель обрабатывает под-пути (#admin/food) сама внутри Views.admin
