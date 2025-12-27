@@ -1,79 +1,137 @@
+
 const path = require('path');
-const fileManager = require('../../../lib/fileManager');
+const { fileManager } = require('../../../lib/fileManager');
 
 class ElectricalGoodsService {
     constructor() {
         this.dataFile = path.join(__dirname, '../data/electrical_goods.json');
+        this.initializeData();
+    }
+
+    async initializeData() {
+        try {
+            const exists = await fileManager.fileExists(this.dataFile);
+            if (!exists) {
+                // Создаем пустой массив, если файла нет
+                await fileManager.writeJSON(this.dataFile, []);
+                console.log('Файл данных для товаров создан');
+            }
+        } catch (error) {
+            console.error('Ошибка при инициализации данных товаров:', error);
+        }
     }
 
     async getAllGoods() {
         try {
-            const data = await fileManager.readFile(this.dataFile);
-            return JSON.parse(data || '[]');
+            // Используем правильный метод readJSON
+            const data = await fileManager.readJSON(this.dataFile);
+            return data;
         } catch (error) {
-            console.log('Ошибка чтения файла, возвращаю пустой массив');
-            return [];  
+            console.error('Ошибка при получении товаров:', error);
+            throw new Error('Не удалось получить список товаров');
         }
     }
 
     async getGoodById(id) {
-        const goods = await this.getAllGoods();
-        const good = goods.find(item => item.id === id);
-        
-        if (!good) {
-            throw new Error(`Товар с ID ${id} не найден`);
+        try {
+            const data = await fileManager.readJSON(this.dataFile);
+            const good = data.find(item => item.id === id);
+            
+            if (!good) {
+                throw new Error(`Товар с ID ${id} не найден`);
+            }
+            
+            return good;
+        } catch (error) {
+            console.error(`Ошибка при получении товара с ID ${id}:`, error);
+            throw error;
         }
-        
-        return good;
     }
 
     async createGood(goodData) {
-        const goods = await this.getAllGoods();
-        const newGood = {
-            id: Date.now().toString(),
-            ...goodData,
-            createdAt: new Date().toISOString()
-        };
-        
-        goods.push(newGood);
-        await fileManager.writeFile(this.dataFile, JSON.stringify(goods, null, 2));
-        return newGood;
+        try {
+            const goods = await fileManager.readJSON(this.dataFile);
+            const newGood = {
+                id: Date.now().toString(),
+                ...goodData,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            goods.push(newGood);
+            await fileManager.writeJSON(this.dataFile, goods);
+            
+            return newGood;
+        } catch (error) {
+            console.error('Ошибка при создании товара:', error);
+            throw new Error('Не удалось создать товар');
+        }
     }
 
     async updateGood(id, updateData) {
-        const goods = await this.getAllGoods();
-        const index = goods.findIndex(item => item.id === id);
-        
-        if (index === -1) {
-            throw new Error(`Товар с ID ${id} не найден`);
+        try {
+            const goods = await fileManager.readJSON(this.dataFile);
+            const index = goods.findIndex(item => item.id === id);
+            
+            if (index === -1) {
+                throw new Error(`Товар с ID ${id} не найден`);
+            }
+            
+            const createdAt = goods[index].createdAt;
+            goods[index] = {
+                ...goods[index],
+                ...updateData,
+                id,
+                createdAt,
+                updatedAt: new Date().toISOString()
+            };
+            
+            await fileManager.writeJSON(this.dataFile, goods);
+            
+            return goods[index];
+        } catch (error) {
+            console.error(`Ошибка при обновлении товара с ID ${id}:`, error);
+            throw error;
         }
-        
-        goods[index] = { ...goods[index], ...updateData };
-        await fileManager.writeFile(this.dataFile, JSON.stringify(goods, null, 2));
-        return goods[index];
     }
 
     async deleteGood(id) {
-        const goods = await this.getAllGoods();
-        const index = goods.findIndex(item => item.id === id);
-        
-        if (index === -1) {
-            throw new Error(`Товар с ID ${id} не найден`);
+        try {
+            const data = await fileManager.readJSON(this.dataFile);
+            const index = data.findIndex(item => item.id === id);
+            
+            if (index === -1) {
+                throw new Error(`Товар с ID ${id} не найден`);
+            }
+            
+            const deletedGood = data.splice(index, 1)[0];
+            await fileManager.writeJSON(this.dataFile, data);
+            
+            return deletedGood;
+        } catch (error) {
+            console.error(`Ошибка при удалении товара с ID ${id}:`, error);
+            throw error;
         }
-        
-        const deletedGood = goods.splice(index, 1)[0];
-        await fileManager.writeFile(this.dataFile, JSON.stringify(goods, null, 2));
-        return deletedGood;
     }
 
     async getGoodsByCategory(category) {
-        const goods = await this.getAllGoods();
-        return goods.filter(item => item.category === category);
+        try {
+            const goods = await fileManager.readJSON(this.dataFile);
+            return goods.filter(item => item.category === category);
+        } catch (error) {
+            console.error(`Ошибка при поиске товаров по категории ${category}:`, error);
+            throw error;
+        }
     }
 
     async getInStockGoods() {
-        const goods = await this.getAllGoods();
-        return goods.filter(item => item.isInStock === true);
+        try {
+            const goods = await fileManager.readJSON(this.dataFile);
+            return goods.filter(item => item.isInStock === true);
+        } catch (error) {
+            console.error('Ошибка при получении товаров в наличии:', error);
+            throw error;
+        }
     }
 }
 

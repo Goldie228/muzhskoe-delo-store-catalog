@@ -1,6 +1,6 @@
 
 const path = require('path');
-const fileManager = require('../../../lib/fileManager');
+const { fileManager } = require('../../../lib/fileManager');
 
 class OrdersService {
     constructor() {
@@ -12,7 +12,8 @@ class OrdersService {
         try {
             const exists = await fileManager.fileExists(this.dataFile);
             if (!exists) {
-                await fileManager.writeFile(this.dataFile, JSON.stringify([]));
+                // Используем writeJSON
+                await fileManager.writeJSON(this.dataFile, []);
                 console.log('Файл данных для заказов создан');
             }
         } catch (error) {
@@ -22,8 +23,8 @@ class OrdersService {
 
     async getAllOrders() {
         try {
-            const data = await fileManager.readFile(this.dataFile);
-            return JSON.parse(data);
+            const data = await fileManager.readJSON(this.dataFile);
+            return data;
         } catch (error) {
             console.error('Ошибка при получении заказов:', error);
             throw new Error('Не удалось получить список заказов');
@@ -32,7 +33,7 @@ class OrdersService {
 
     async getOrderById(id) {
         try {
-            const orders = await this.getAllOrders();
+            const orders = await fileManager.readJSON(this.dataFile);
             const order = orders.find(item => item.id === id);
             
             if (!order) {
@@ -48,20 +49,22 @@ class OrdersService {
 
     async createOrder(orderData) {
         try {
-           
             const orderNumber = 'ORD-' + Date.now().toString().slice(-8);
+            const orders = await fileManager.readJSON(this.dataFile);
             
-            const orders = await this.getAllOrders();
             const newOrder = {
                 id: Date.now().toString(),
                 orderNumber,
                 ...orderData,
                 orderDate: new Date().toISOString(),
-                status: orderData.status || 'pending' // Статус по умолчанию
+                status: orderData.status || 'pending',
+                updatedAt: new Date().toISOString()
             };
             
             orders.push(newOrder);
-            await fileManager.writeFile(this.dataFile, JSON.stringify(orders, null, 2));
+            
+            // Используем writeJSON
+            await fileManager.writeJSON(this.dataFile, orders);
             
             return newOrder;
         } catch (error) {
@@ -72,24 +75,25 @@ class OrdersService {
 
     async updateOrder(id, updateData) {
         try {
-            const orders = await this.getAllOrders();
+            const orders = await fileManager.readJSON(this.dataFile);
             const index = orders.findIndex(item => item.id === id);
             
             if (index === -1) {
                 throw new Error(`Заказ с ID ${id} не найден`);
             }
             
-         
             const { orderNumber, orderDate } = orders[index];
             orders[index] = {
                 ...orders[index],
                 ...updateData,
                 id,
                 orderNumber, 
-                orderDate 
+                orderDate,
+                updatedAt: new Date().toISOString()
             };
             
-            await fileManager.writeFile(this.dataFile, JSON.stringify(orders, null, 2));
+            // Используем writeJSON
+            await fileManager.writeJSON(this.dataFile, orders);
             
             return orders[index];
         } catch (error) {
@@ -100,15 +104,17 @@ class OrdersService {
 
     async deleteOrder(id) {
         try {
-            const orders = await this.getAllOrders();
-            const index = orders.findIndex(item => item.id === id);
+            const data = await fileManager.readJSON(this.dataFile);
+            const index = data.findIndex(item => item.id === id);
             
             if (index === -1) {
                 throw new Error(`Заказ с ID ${id} не найден`);
             }
             
-            const deletedOrder = orders.splice(index, 1)[0];
-            await fileManager.writeFile(this.dataFile, JSON.stringify(orders, null, 2));
+            const deletedOrder = data.splice(index, 1)[0];
+            
+            // Используем writeJSON
+            await fileManager.writeJSON(this.dataFile, data);
             
             return deletedOrder;
         } catch (error) {
@@ -119,7 +125,7 @@ class OrdersService {
 
     async getOrdersByStatus(status) {
         try {
-            const orders = await this.getAllOrders();
+            const orders = await fileManager.readJSON(this.dataFile);
             return orders.filter(item => 
                 item.status.toLowerCase() === status.toLowerCase()
             );
@@ -131,7 +137,7 @@ class OrdersService {
 
     async getOrdersByCustomer(customerName) {
         try {
-            const orders = await this.getAllOrders();
+            const orders = await fileManager.readJSON(this.dataFile);
             return orders.filter(item => 
                 item.customerName.toLowerCase().includes(customerName.toLowerCase())
             );
