@@ -1,24 +1,37 @@
-
 const fs = require('fs');
 const path = require('path');
 
+// Простая карта MIME-типов
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.eot': 'application/vnd.ms-fontobject',
+};
+
 /**
  * Middleware для обслуживания статических файлов.
- * Пропускает все запросы, начинающиеся с /api.
- * @param {string} rootDir - Корневая директория для статических файлов (например, 'public')
+ * Возвращает Promise, чтобы App.js ждал завершения отправки файла.
  */
 function staticMiddleware(rootDir) {
-  // Преобразуем относительный путь в абсолютный от запуска сервера
   const absoluteRoot = path.resolve(process.cwd(), rootDir);
 
   return function (req, res, next) {
-    // Если запрос идет к API, пропускаем его дальше к роутеру
+    // Если запрос к API, пропускаем
     if (req.path.startsWith('/api')) {
       return next();
     }
 
-    // Убираем query строку и декодируем URI компоненты пути
-    // Для безопасности запрещаем выход за пределы директории (..)
     let requestedPath = req.path;
     try {
       requestedPath = decodeURIComponent(requestedPath);
@@ -26,54 +39,77 @@ function staticMiddleware(rootDir) {
       return res.status(400).send('Некорректный URI');
     }
 
-    // Защита от выхода за корень (Directory Traversal)
+    // Защита от выхода за корень
     if (requestedPath.includes('..')) {
       return res.status(403).send('Доступ запрещен');
     }
 
-    // Если запрошен корень сайта или папка, отдаем index.html (для SPA)
     let filePath = path.join(absoluteRoot, requestedPath);
+    
+    // Проверка существования и определение типа (файл или папка)
+    let stats;
     try {
-      const stats = fs.statSync(filePath);
+      stats = fs.statSync(filePath);
       if (stats.isDirectory()) {
         filePath = path.join(filePath, 'index.html');
+        // Проверяем, существует ли index.html в папке
+        try {
+          fs.statSync(filePath);
+        } catch (e) {
+          // index.html нет в папке
+          return res.status(404).send('Файл не найден');
+        }
       }
     } catch (e) {
-      // Если файл не найден через stat, попробуем просто отдать как есть (ошибка будет в sendFile)
-      // или сразу отдать 404. Лучше передать управление в sendFile для единообразия.
+      // Если запрошен путь без расширения (например, /food), и это не папка
+      // и файл не найден, для SPA отдаем index.html
+      if (!path.extname(requestedPath) && requestedPath !== '/') {
+        const indexPath = path.join(absoluteRoot, 'index.html');
+        try {
+          fs.statSync(indexPath);
+          filePath = indexPath;
+        } catch (indexErr) {
+          return res.status(404).send('Файл не найден');
+        }
+      } else {
+        return res.status(404).send('Файл не найден');
+      }
     }
 
-    // Используем метод sendFile из обертки Response
-    // Если res.sendFile отсутствует (стандартный res), используем базовую логику
-    if (typeof res.sendFile === 'function') {
-      res.sendFile(filePath);
-    } else {
-      // Fallback для нативного res (если middleware используется без обертки)
-      fs.readFile(filePath, (err, data) => {
-        if (err) {
-          // Если запрошен путь, но это не API и не файл - для SPA отдаем index.html
-          // Это нужно для работы роутинга на клиенте (например, /food)
-          if (err.code === 'ENOENT' && requestedPath !== '/' && !path.extname(requestedPath)) {
-            const indexPath = path.join(absoluteRoot, 'index.html');
-            return fs.readFile(indexPath, (indexErr, indexData) => {
-              if (indexErr) {
-                res.statusCode = 404;
-                res.end('Not Found');
-              } else {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'text/html');
-                res.end(indexData);
-              }
-            });
-          }
-          res.statusCode = 404;
-          res.end('Not Found');
-          return;
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+    // Возвращаем Promise, чтобы App.js подождал, пока файл отправится
+    return new Promise((resolve) => {
+      const stream = fs.createReadStream(filePath);
+
+      stream.on('open', () => {
+        // Устанавливаем заголовки напрямую в нативный res, 
+        // чтобы избежать проблем с оберткой в стримах
+        if (!res._res.headersSent) {
+          res._res.setHeader('Content-Type', contentType);
         }
-        res.statusCode = 200;
-        res.end(data);
+        stream.pipe(res._res);
       });
-    }
+
+      stream.on('error', (err) => {
+        console.error(`\x1b[31m[ERROR]\x1b[0m Ошибка чтения файла:`, err);
+        if (!res.headersSent && !res._res.headersSent) {
+          res.status(500).send('Ошибка сервера');
+        }
+        resolve(); // Завершаем промис, чтобы middleware завершился
+      });
+
+      stream.on('end', () => {
+        // Закрываем ответ
+        if (!res.finished && !res._res.writableEnded) {
+          try {
+            res._res.end();
+          } catch (e) {}
+        }
+        resolve(); // Сообщаем App.js, что middleware закончил работу
+      });
+    });
   };
 }
 
