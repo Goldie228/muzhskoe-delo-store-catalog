@@ -2,24 +2,21 @@
 import { api } from './api.js';
 
 /**
- * Утилита для форматирования даты в формат ДД.ММ.ГГГГ
+ * Утилита для форматирования даты
  */
 const formatDate = (dateString) => {
     if (!dateString) return '';
-    // Проверяем на валидность даты
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
     
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    
     return `${day}.${month}.${year}`;
 };
 
 /**
- * Утилита для рендера полей товара.
- * Обнаруживает даты и массивы и красиво выводит их.
+ * Утилита для рендера полей товара
  */
 const FieldRenderer = {
   renderArray(key, value) {
@@ -28,7 +25,6 @@ const FieldRenderer = {
   },
 
   renderObject(key, value) {
-    // Если это объект с ценой и кол-вом (в заказах)
     if (value.price !== undefined) {
         return `<div class="card-detail-row">
                     <span class="card-detail-label">${value.productName || 'Товар'}</span>
@@ -39,14 +35,11 @@ const FieldRenderer = {
   },
 
   render(key, value) {
-    // Проверка на дату (ISO строка)
     if (typeof value === 'string' && (value.includes('T') || value.match(/^\d{4}-\d{2}-\d{2}/))) {
         return `<div class="card-detail-row"><span class="card-detail-label">${key}</span>: <span>${formatDate(value)}</span></div>`;
     }
-
     if (Array.isArray(value)) return this.renderArray(key, value);
     if (typeof value === 'object' && value !== null) return this.renderObject(key, value);
-    
     return `<div class="card-detail-row"><span class="card-detail-label">${key}</span>: <span>${value}</span></div>`;
   }
 };
@@ -55,11 +48,9 @@ const FieldRenderer = {
  * Генерация HTML карточки товара
  */
 const createCardHTML = (item) => {
-  // Форматирование цены (BYN)
   const price = item.price !== undefined ? `${item.price} BYN` : 'Цена не указана';
   const name = item.name || item.title || 'Без названия';
 
-  // Собираем детали
   const excludeKeys = ['id', 'name', 'title', 'price', 'createdAt', 'updatedAt', 'isInStock', 'inStock', 'isAvailable'];
   let detailsHTML = '';
 
@@ -69,7 +60,6 @@ const createCardHTML = (item) => {
     }
   });
 
-  // Логика наличия
   let stockBadge = '';
   if (item.inStock !== undefined || item.isInStock !== undefined || item.isAvailable !== undefined) {
     const isStock = item.inStock ?? item.isInStock ?? item.isAvailable;
@@ -78,7 +68,6 @@ const createCardHTML = (item) => {
       : `<span class="badge out-of-stock">❌ Нет в наличии</span>`;
   }
 
-  // Кнопка удалена, остался только бейдж статуса
   return `
     <div class="card">
       <div class="card-header">
@@ -96,7 +85,429 @@ const createCardHTML = (item) => {
 };
 
 /**
- * Роутер и Views
+ * Конфигурация админки
+ */
+const ADMIN_CONFIG = {
+    food: {
+        label: 'Еда',
+        endpoint: '/food',
+        fields: [
+            { key: 'name', label: 'Название блюда', type: 'text' },
+            { key: 'price', label: 'Цена (BYN)', type: 'number' },
+            { key: 'inStock', label: 'В наличии', type: 'checkbox' },
+            { key: 'ingredients', label: 'Ингредиенты (через запятую)', type: 'text' }
+        ]
+    },
+    electronics: {
+        label: 'Электроника',
+        endpoint: '/electronics/goods',
+        fields: [
+            { key: 'name', label: 'Название товара', type: 'text' },
+            { key: 'category', label: 'Категория', type: 'text' },
+            { key: 'price', label: 'Цена (BYN)', type: 'number' },
+            { key: 'voltage', label: 'Напряжение (В)', type: 'number' },
+            { key: 'current', label: 'Ток (А)', type: 'number' },
+            { key: 'isInStock', label: 'В наличии', type: 'checkbox' },
+            { key: 'specifications', label: 'Характеристики (через запятую)', type: 'text' }
+        ]
+    },
+    alcohol: {
+        label: 'Алкоголь',
+        endpoint: '/alcohol/beverages',
+        fields: [
+            { key: 'name', label: 'Название', type: 'text' },
+            { key: 'type', label: 'Тип', type: 'text' },
+            { key: 'price', label: 'Цена (BYN)', type: 'number' },
+            { key: 'strength', label: 'Крепость (%)', type: 'number' },
+            { key: 'volume', label: 'Объем (мл)', type: 'number' },
+            { key: 'inStock', label: 'В наличии', type: 'checkbox' },
+            { key: 'tags', label: 'Теги (через запятую)', type: 'text' }
+        ]
+    },
+    philosophy: {
+        label: 'Книги',
+        endpoint: '/philosophy/books',
+        fields: [
+            { key: 'title', label: 'Название книги', type: 'text' },
+            { key: 'price', label: 'Цена (BYN)', type: 'number' },
+            { key: 'isAvailable', label: 'В наличии', type: 'checkbox' },
+            { key: 'publishDate', label: 'Дата публикации', type: 'date' },
+            { key: 'tags', label: 'Теги (через запятую)', type: 'text' }
+        ]
+    }
+};
+
+/**
+ * Утилита для рендера форм
+ */
+const AdminForm = {
+    open(mode, item, moduleKey) {
+        const config = ADMIN_CONFIG[moduleKey];
+        const modal = document.getElementById('modal-container');
+        
+        let fieldsHTML = config.fields.map(field => {
+            const value = (mode === 'edit' && item) ? (item[field.key] || '') : '';
+            
+            if (field.type === 'checkbox') {
+                return `
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="${field.key}" class="form-control" ${value ? 'checked' : ''}>
+                            ${field.label}
+                        </label>
+                    </div>`;
+            } else if (Array.isArray(value)) {
+                 const strVal = value.join(', ');
+                 return `
+                    <div class="form-group">
+                        <label>${field.label}</label>
+                        <input type="${field.type}" name="${field.key}" value="${strVal}" class="form-control">
+                    </div>`;
+            } else {
+                return `
+                    <div class="form-group">
+                        <label>${field.label}</label>
+                        <input type="${field.type}" name="${field.key}" value="${value}" class="form-control">
+                    </div>`;
+            }
+        }).join('');
+
+        modal.innerHTML = `
+            <div class="modal-overlay active">
+                <div class="modal">
+                    <h3>${mode === 'create' ? 'Создать' : 'Редактировать'}: ${config.label}</h3>
+                    <form id="admin-form">
+                        ${fieldsHTML}
+                        <div class="modal-actions">
+                            <button type="button" class="btn" style="background:#9ca3af" onclick="AdminForm.close()">Отмена</button>
+                            <button type="submit" class="btn">Сохранить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('admin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await AdminForm.submit(mode, item, moduleKey);
+        });
+    },
+
+    close() {
+        document.getElementById('modal-container').innerHTML = '';
+    },
+
+    async submit(mode, item, moduleKey) {
+        const formData = new FormData(document.getElementById('admin-form'));
+        const data = {};
+        
+        ADMIN_CONFIG[moduleKey].fields.forEach(field => {
+            if (field.type === 'checkbox') {
+                data[field.key] = !!formData.get(field.key);
+            } else if (field.key.includes('ingredients') || field.key.includes('tags') || field.key.includes('specifications')) {
+                const val = formData.get(field.key);
+                data[field.key] = val ? val.split(',').map(s => s.trim()) : [];
+            } else {
+                data[field.key] = formData.get(field.key);
+            }
+        });
+
+        try {
+            if (mode === 'create') {
+                await api.post(ADMIN_CONFIG[moduleKey].endpoint, data);
+            } else if (mode === 'edit') {
+                await api.put(`${ADMIN_CONFIG[moduleKey].endpoint}/${item.id}`, data);
+            }
+            AdminForm.close();
+            // Обновляем страницу (самый простой способ обновить таблицу)
+            location.hash = '#admin/' + moduleKey;
+        } catch (error) {
+            alert('Ошибка сохранения: ' + error.message);
+        }
+    }
+};
+
+/**
+ * Глобальные функции для обработки событий (клики, отправка форм)
+ */
+window.handleLogin = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const login = form.login.value;
+    const password = form.password.value;
+
+    try {
+        // Отправляем запрос
+        const res = await api.post('/auth/login', { login, password });
+        
+        // Логируем ответ для отладки
+        console.log('Ответ сервера при логине:', res);
+
+        // Проверяем, что ответ успешный И содержит токен
+        if (res.success && res.token) {
+            // Сохраняем токен в память и localStorage (сессия)
+            api.setToken(res.token);
+            
+            // Редирект на админку
+            location.hash = '#admin';
+        } else {
+            // Если 200, но success=false или token отсутствует
+            alert('Ошибка входа: ' + (res.message || 'Неверный формат ответа сервера'));
+        }
+    } catch (err) {
+        alert('Ошибка соединения или 401: ' + err.message);
+    }
+};
+
+window.deleteItem = async (moduleKey, id) => {
+    if (!confirm('Вы уверены, что хотите удалить запись?')) return;
+    try {
+        await api.delete(ADMIN_CONFIG[moduleKey].endpoint + '/' + id);
+        location.reload();
+    } catch (e) {
+        alert('Ошибка удаления: ' + e.message);
+    }
+};
+
+/**
+ * Объект Views (ОБЪЕДИНЕННЫЙ)
+ * Содержит и админ-страницы, и публичные страницы
+ */
+const Views = {
+    // --- Публичные страницы ---
+    home: () => `
+        <div class="hero">
+            <h2>Мужское Дело</h2>
+            <p>Всё необходимое для современного мужчины: от инструментов до книг, от техники до элитного алкоголя.</p>
+            <div class="items-grid">
+                <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#food'">
+                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+                    <h3 style="margin-top:0;">Еда</h3>
+                </div>
+                <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#electronics'">
+                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                    <h3 style="margin-top:0;">Электроника</h3>
+                </div>
+                <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#alcohol'">
+                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M8 21h8a2 2 0 0 0 2-2v-9.4a1 1 0 0 0-.4-.8l-3.6-2.4V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2.4l-3.6 2.4a1 1 0 0 0-.4.8V19a2 2 0 0 0 2 2z"></path></svg>
+                    <h3 style="margin-top:0;">Напитки</h3>
+                </div>
+                <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#philosophy'">
+                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <h3 style="margin-top:0;">Книги</h3>
+                </div>
+            </div>
+        </div>
+    `,
+
+    food: async () => {
+        const res = await api.get('/food');
+        const items = res.data || [];
+        const cards = items.map(item => createCardHTML(item)).join('');
+        return `
+            <div style="margin-bottom: 1.5rem;"><h1 style="margin:0;">Меню блюд</h1><p style="margin:0.5rem 0 0; color:#666;">Свежая еда, доставляемая к вашей двери.</p></div>
+            ${cards ? `<div class="items-grid">${cards}</div>` : '<p>Блюд пока нет.</p>'}
+        `;
+    },
+
+    electronics: async () => {
+        const res = await api.get('/electronics/goods');
+        const items = res.data || [];
+        const cards = items.map(item => createCardHTML(item)).join('');
+        return `
+            <div style="margin-bottom: 1.5rem;"><h1 style="margin:0;">Электроника</h1><p style="margin:0.5rem 0 0; color:#666;">Качественная техника для дома и работы.</p></div>
+            ${cards ? `<div class="items-grid">${cards}</div>` : '<p>Товаров пока нет.</p>'}
+        `;
+    },
+
+    alcohol: async () => {
+        const res = await api.get('/alcohol/beverages');
+        const items = res.data || [];
+        const cards = items.map(item => createCardHTML(item)).join('');
+        return `
+            <div style="margin-bottom: 1.5rem;"><h1 style="margin:0;">Алкоголь</h1><p style="margin:0.5rem 0 0; color:#666;">Премиальные напитки для особых случаев.</p></div>
+            ${cards ? `<div class="items-grid">${cards}</div>` : '<p>Напитков пока нет.</p>'}
+        `;
+    },
+
+    philosophy: async () => {
+        const res = await api.get('/philosophy/books');
+        const items = res.data || [];
+        const cards = items.map(item => createCardHTML(item)).join('');
+        return `
+            <div style="margin-bottom: 1.5rem;"><h1 style="margin:0;">Философия</h1><p style="margin:0.5rem 0 0; color:#666;">Книги для развития ума и духа.</p></div>
+            ${cards ? `<div class="items-grid">${cards}</div>` : '<p>Книг пока нет.</p>'}
+        `;
+    },
+
+    authors: () => {
+        const authors = [
+            { name: 'Кажуро Глеб', role: 'ТимЛид, Разработка API (Еда)', variant: '№8' },
+            { name: 'Пугач Никита', role: 'Разработка API (Философия)', variant: '№17' },
+            { name: 'Султанов Тимофей', role: 'Разработка API (Электроника)', variant: '№21' },
+            { name: 'Тимовец Никита', role: 'Разработка API (Алкоголь)', variant: '№24' }
+        ];
+
+        const rows = authors.map(a => `
+            <tr>
+                <td>${a.name}</td>
+                <td>${a.role}</td>
+                <td><span class="tag">${a.variant}</span></td>
+            </tr>
+        `).join('');
+
+        return `
+            <div class="info-section">
+                <h1>Команда разработчиков</h1>
+                <p style="color:#666;">Группа Т-393 / Т-392 • Веб-программирование • Лабораторные №9-10</p>
+                
+                <table class="team-table">
+                    <thead>
+                        <tr>
+                            <th>Имя</th>
+                            <th>Роль в проекте</th>
+                            <th>Вариант ТЗ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    },
+
+    info: () => {
+        return `
+            <div class="info-section">
+                <h1>📦 Каталог магазина "Мужское дело"</h1>
+                <p>Проект, разработанный в рамках лабораторных работ №9-10 по курсу "Веб-программирование".</p>
+                
+                <h2>📖 Описание проекта</h2>
+                <p>Проект <strong>"Мужское дело"</strong> — это серверное веб-приложение, представляющее собой каталог товаров для одноименного гипотетического магазина.</p>
+                <ul>
+                    <li>🍔 Доставка еды (вариант №8)</li>
+                    <li>📱 Электроника (вариант №21)</li>
+                    <li>🍷 Алкогольная продукция (вариант №24)</li>
+                    <li>📚 Книги по философии (вариант №17)</li>
+                </ul>
+
+                <h2>⚙️ Реализация</h2>
+                <ul>
+                    <li><strong>Без фреймворков:</strong> Собственный Node.js фреймворк (без Express/Koa).</li>
+                    <li><strong>Архитектура:</strong> RESTful API, EventEmmiter, Streams.</li>
+                </ul>
+            </div>
+        `;
+    },
+
+    // --- Админка ---
+    login: () => `
+        <div class="login-container">
+            <div class="login-card">
+                <h2>Вход для Администратора</h2>
+                <!-- Добавлен обработчик window.handleLogin -->
+                <form onsubmit="window.handleLogin(event)">
+                    <div class="form-group">
+                        <label>Логин</label>
+                        <input type="text" name="login" class="form-control" required placeholder="admin">
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input type="password" name="password" class="form-control" required placeholder="password">
+                    </div>
+                    <button type="submit" class="btn" style="width:100%">Войти</button>
+                </form>
+            </div>
+        </div>
+    `,
+
+    admin: async () => {
+        // Проверка токена
+        if (!api.token) {
+            location.hash = '#login';
+            return '';
+        }
+
+        // Если хеш просто '#admin', показываем выбор модулей
+        if (location.hash === '#admin') {
+            const keys = Object.keys(ADMIN_CONFIG);
+            const menuItems = keys.map(k => `
+                <div class="card" style="padding:2rem; text-align:center; cursor:pointer;" onclick="window.location.hash='#admin/${k}'">
+                    <h3>${ADMIN_CONFIG[k].label}</h3>
+                </div>
+            `).join('');
+
+            return `
+                <h1 style="text-align:center;">Панель Администратора</h1>
+                <div class="items-grid" style="max-width:800px; margin:0 auto;">
+                    ${menuItems}
+                    <div class="card" style="padding:2rem; text-align:center; cursor:pointer; background:#fee2e2;" onclick="location.hash='#/'">
+                        <h3>Выход</h3>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Если хеш вида '#admin/food', показываем таблицу
+        const hashParts = location.hash.split('/');
+        const currentModule = hashParts[1]; // 'food', 'electronics' ...
+        const config = ADMIN_CONFIG[currentModule];
+
+        if (!config) return 'Модуль не найден';
+
+        const res = await api.get(config.endpoint);
+        const items = res.data || [];
+
+        const rows = items.map(item => `
+            <tr>
+                <td>${item.id}</td>
+                <td><strong>${item.name || item.title}</strong></td>
+                <td>${item.price} BYN</td>
+                <td>
+                    <button class="action-btn btn-edit" onclick="AdminForm.open('edit', ${JSON.stringify(item)}, '${currentModule}')">Ред.</button>
+                    <button class="action-btn btn-delete" onclick="deleteItem('${currentModule}', '${item.id}')">Удалить</button>
+                </td>
+            </tr>
+        `).join('');
+
+        return `
+            <div class="admin-layout">
+                <div class="admin-sidebar">
+                    <div class="admin-menu-btn" onclick="location.hash='#admin'">← Меню</div>
+                    ${Object.keys(ADMIN_CONFIG).map(k => `
+                        <div class="admin-menu-btn ${k === currentModule ? 'active' : ''}" onclick="window.location.hash='#admin/${k}'">
+                            ${ADMIN_CONFIG[k].label}
+                        </div>
+                    `).join('')}
+                    <div class="admin-menu-btn" style="color:#ef4444; margin-top:2rem;" onclick="localStorage.removeItem('auth_token'); api.setToken(null); location.hash='#login'">Выход</div>
+                </div>
+                <div class="admin-content">
+                    <div class="admin-header">
+                        <h2>Управление: ${config.label}</h2>
+                        <button class="btn btn-add" onclick="AdminForm.open('create', null, '${currentModule}')">+ Добавить</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Цена</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows.length ? rows : '<tr><td colspan="4" style="text-align:center;">Данных нет</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+};
+
+/**
+ * Роутер
  */
 class Router {
     constructor() {
@@ -136,146 +547,7 @@ class Router {
     }
 }
 
-const Views = {
-    // --- Главная ---
-    home: () => `
-        <div class="hero">
-            <h2>Мужское Дело</h2>
-            <p>Всё необходимое для современного мужчины: от инструментов до книг, от техники до элитного алкоголя.</p>
-            <div class="items-grid">
-                <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#food'">
-                    <!-- ИСПРАВЛЕНИЕ: display:block и margin:auto для центрирования SVG -->
-                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
-                    <h3 style="margin-top:0;">Еда</h3>
-                </div>
-                <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#electronics'">
-                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
-                    <h3 style="margin-top:0;">Электроника</h3>
-                </div>
-                <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#alcohol'">
-                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M8 21h8a2 2 0 0 0 2-2v-9.4a1 1 0 0 0-.4-.8l-3.6-2.4V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2.4l-3.6 2.4a1 1 0 0 0-.4.8V19a2 2 0 0 0 2 2z"></path></svg>
-                    <h3 style="margin-top:0;">Напитки</h3>
-                </div>
-                <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#philosophy'">
-                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                    <h3 style="margin-top:0;">Книги</h3>
-                </div>
-            </div>
-        </div>
-    `,
-
-    // --- Еда ---
-    food: async () => {
-        const res = await api.get('/food');
-        const items = res.data || [];
-        const cards = items.map(item => createCardHTML(item)).join('');
-        return `
-            <div style="margin-bottom: 1.5rem;"><h1 style="margin:0;">Меню блюд</h1><p style="margin:0.5rem 0 0; color:#666;">Свежая еда, доставляемая к вашей двери.</p></div>
-            ${cards ? `<div class="items-grid">${cards}</div>` : '<p>Блюд пока нет.</p>'}
-        `;
-    },
-
-    // --- Электроника ---
-    electronics: async () => {
-        const res = await api.get('/electronics/goods');
-        const items = res.data || [];
-        const cards = items.map(item => createCardHTML(item)).join('');
-        return `
-            <div style="margin-bottom: 1.5rem;"><h1 style="margin:0;">Электроника</h1><p style="margin:0.5rem 0 0; color:#666;">Качественная техника для дома и работы.</p></div>
-            ${cards ? `<div class="items-grid">${cards}</div>` : '<p>Товаров пока нет.</p>'}
-        `;
-    },
-
-    // --- Алкоголь ---
-    alcohol: async () => {
-        const res = await api.get('/alcohol/beverages');
-        const items = res.data || [];
-        const cards = items.map(item => createCardHTML(item)).join('');
-        return `
-            <div style="margin-bottom: 1.5rem;"><h1 style="margin:0;">Алкоголь</h1><p style="margin:0.5rem 0 0; color:#666;">Премиальные напитки для особых случаев.</p></div>
-            ${cards ? `<div class="items-grid">${cards}</div>` : '<p>Напитков пока нет.</p>'}
-        `;
-    },
-
-    // --- Философия ---
-    philosophy: async () => {
-        const res = await api.get('/philosophy/books');
-        const items = res.data || [];
-        const cards = items.map(item => createCardHTML(item)).join('');
-        return `
-            <div style="margin-bottom: 1.5rem;"><h1 style="margin:0;">Философия</h1><p style="margin:0.5rem 0 0; color:#666;">Книги для развития ума и духа.</p></div>
-            ${cards ? `<div class="items-grid">${cards}</div>` : '<p>Книг пока нет.</p>'}
-        `;
-    },
-
-    // --- Авторы ---
-    authors: () => {
-        const authors = [
-            { name: 'Кажуро Глеб', role: 'ТимЛид, Разработка API (Еда)', variant: '№8' },
-            { name: 'Пугач Никита', role: 'Разработка API (Философия)', variant: '№17' },
-            { name: 'Султанов Тимофей', role: 'Разработка API (Электроника)', variant: '№21' },
-            { name: 'Тимовец Никита', role: 'Разработка API (Алкоголь)', variant: '№24' }
-        ];
-
-        const rows = authors.map(a => `
-            <tr>
-                <td>${a.name}</td>
-                <td>${a.role}</td>
-                <td><span class="tag">${a.variant}</span></td>
-            </tr>
-        `).join('');
-
-        return `
-            <div class="info-section">
-                <h1>Команда разработчиков</h1>
-                <p style="color:#666;">Группа Т-393 / Т-392 • Веб-программирование • Лабораторные №9-10</p>
-                
-                <table class="team-table">
-                    <thead>
-                        <tr>
-                            <th>Имя</th>
-                            <th>Роль в проекте</th>
-                            <th>Вариант ТЗ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows}
-                    </tbody>
-                </table>
-            </div>
-        `;
-    },
-
-    // --- Инфо ---
-    info: () => {
-        return `
-            <div class="info-section">
-                <h1>📦 Каталог магазина "Мужское дело"</h1>
-                <p>Проект, разработанный в рамках лабораторных работ №9-10 по курсу "Веб-программирование".</p>
-                
-                <h2>📖 Описание проекта</h2>
-                <p>Проект <strong>"Мужское дело"</strong> — это серверное веб-приложение, представляющее собой каталог товаров для одноименного гипотетического магазина.</p>
-                <ul>
-                    <li>🍔 Доставка еды (вариант №8)</li>
-                    <li>📱 Электроника (вариант №21)</li>
-                    <li>🍷 Алкогольная продукция (вариант №24)</li>
-                    <li>📚 Книги по философии (вариант №17)</li>
-                </ul>
-
-                <h2>⚙️ Реализация</h2>
-                <ul>
-                    <li><strong>Без фреймворков:</strong> Собственный Node.js фреймворк (без Express/Koa).</li>
-                    <li><strong>Архитектура:</strong> RESTful API, EventEmmiter, Streams.</li>
-                </ul>
-
-                <h2>🌐 API</h2>
-                <p>Сервер предоставляет JSON API по адресам вида <code>/api/&lt;module&gt;</code>.</p>
-            </div>
-        `;
-    }
-};
-
-// Инициализация
+// Инициализация роутера
 const router = new Router();
 router.addRoute('/', Views.home);
 router.addRoute('food', Views.food);
@@ -284,3 +556,6 @@ router.addRoute('alcohol', Views.alcohol);
 router.addRoute('philosophy', Views.philosophy);
 router.addRoute('authors', Views.authors);
 router.addRoute('info', Views.info);
+router.addRoute('login', Views.login);
+router.addRoute('admin', Views.admin);
+// Админ-панель обрабатывает под-пути (#admin/food) сама внутри Views.admin
