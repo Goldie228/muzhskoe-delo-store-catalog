@@ -2,8 +2,24 @@
 import { api } from './api.js';
 
 /**
+ * Утилита для форматирования даты в формат ДД.ММ.ГГГГ
+ */
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+    // Проверяем на валидность даты
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}.${month}.${year}`;
+};
+
+/**
  * Утилита для рендера полей товара.
- * Проверяет тип поля и красиво выводит его.
+ * Обнаруживает даты и массивы и красиво выводит их.
  */
 const FieldRenderer = {
   renderArray(key, value) {
@@ -16,15 +32,21 @@ const FieldRenderer = {
     if (value.price !== undefined) {
         return `<div class="card-detail-row">
                     <span class="card-detail-label">${value.productName || 'Товар'}</span>
-                    <span>${value.quantity} шт x ${value.price} ₽</span>
+                    <span>${value.quantity} шт x ${value.price} BYN</span>
                 </div>`;
     }
     return `<div class="card-detail-row"><span class="card-detail-label">${key}</span>: <span>${JSON.stringify(value)}</span></div>`;
   },
 
   render(key, value) {
+    // Проверка на дату (ISO строка)
+    if (typeof value === 'string' && (value.includes('T') || value.match(/^\d{4}-\d{2}-\d{2}/))) {
+        return `<div class="card-detail-row"><span class="card-detail-label">${key}</span>: <span>${formatDate(value)}</span></div>`;
+    }
+
     if (Array.isArray(value)) return this.renderArray(key, value);
     if (typeof value === 'object' && value !== null) return this.renderObject(key, value);
+    
     return `<div class="card-detail-row"><span class="card-detail-label">${key}</span>: <span>${value}</span></div>`;
   }
 };
@@ -32,12 +54,12 @@ const FieldRenderer = {
 /**
  * Генерация HTML карточки товара
  */
-const createCardHTML = (item, categoryName) => {
-  // Форматирование цены
-  const price = item.price !== undefined ? `${item.price} ₽` : 'Цена не указана';
+const createCardHTML = (item) => {
+  // Форматирование цены (BYN)
+  const price = item.price !== undefined ? `${item.price} BYN` : 'Цена не указана';
   const name = item.name || item.title || 'Без названия';
 
-  // Собираем детали (пропуская стандартные поля)
+  // Собираем детали
   const excludeKeys = ['id', 'name', 'title', 'price', 'createdAt', 'updatedAt', 'isInStock', 'inStock', 'isAvailable'];
   let detailsHTML = '';
 
@@ -47,7 +69,7 @@ const createCardHTML = (item, categoryName) => {
     }
   });
 
-  // Логика наличия (разные поля в разных сервисах)
+  // Логика наличия
   let stockBadge = '';
   if (item.inStock !== undefined || item.isInStock !== undefined || item.isAvailable !== undefined) {
     const isStock = item.inStock ?? item.isInStock ?? item.isAvailable;
@@ -56,6 +78,7 @@ const createCardHTML = (item, categoryName) => {
       : `<span class="badge out-of-stock">❌ Нет в наличии</span>`;
   }
 
+  // Кнопка удалена, остался только бейдж статуса
   return `
     <div class="card">
       <div class="card-header">
@@ -63,11 +86,10 @@ const createCardHTML = (item, categoryName) => {
         <span class="card-price">${price}</span>
       </div>
       <div class="card-body">
-        ${detailsHTML || '<p style="font-style: italic;">Нет дополнительной информации</p>'}
+        ${detailsHTML || '<p style="font-style: italic; color: #9ca3af;">Нет дополнительной информации</p>'}
       </div>
       <div class="card-footer">
         ${stockBadge}
-        <button class="btn" disabled>В корзину</button>
       </div>
     </div>
   `;
@@ -122,20 +144,21 @@ const Views = {
             <p>Всё необходимое для современного мужчины: от инструментов до книг, от техники до элитного алкоголя.</p>
             <div class="items-grid">
                 <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#food'">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>
-                    <h3 style="margin-top:1rem;">Еда</h3>
+                    <!-- ИСПРАВЛЕНИЕ: display:block и margin:auto для центрирования SVG -->
+                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+                    <h3 style="margin-top:0;">Еда</h3>
                 </div>
                 <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#electronics'">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect></svg>
-                    <h3 style="margin-top:1rem;">Электроника</h3>
+                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                    <h3 style="margin-top:0;">Электроника</h3>
                 </div>
                 <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#alcohol'">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M8 21h8a2 2 0 0 0 2-2v-9.4a1 1 0 0 0-.4-.8l-3.6-2.4V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2.4l-3.6 2.4a1 1 0 0 0-.4.8V19a2 2 0 0 0 2 2z"></path></svg>
-                    <h3 style="margin-top:1rem;">Напитки</h3>
+                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M8 21h8a2 2 0 0 0 2-2v-9.4a1 1 0 0 0-.4-.8l-3.6-2.4V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2.4l-3.6 2.4a1 1 0 0 0-.4.8V19a2 2 0 0 0 2 2z"></path></svg>
+                    <h3 style="margin-top:0;">Напитки</h3>
                 </div>
                 <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#philosophy'">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                    <h3 style="margin-top:1rem;">Книги</h3>
+                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <h3 style="margin-top:0;">Книги</h3>
                 </div>
             </div>
         </div>
@@ -187,7 +210,6 @@ const Views = {
 
     // --- Авторы ---
     authors: () => {
-        // Статические данные из Markdown
         const authors = [
             { name: 'Кажуро Глеб', role: 'ТимЛид, Разработка API (Еда)', variant: '№8' },
             { name: 'Пугач Никита', role: 'Разработка API (Философия)', variant: '№17' },
@@ -224,7 +246,7 @@ const Views = {
         `;
     },
 
-    // --- Инфо (Проект) ---
+    // --- Инфо ---
     info: () => {
         return `
             <div class="info-section">
@@ -232,7 +254,7 @@ const Views = {
                 <p>Проект, разработанный в рамках лабораторных работ №9-10 по курсу "Веб-программирование".</p>
                 
                 <h2>📖 Описание проекта</h2>
-                <p>Проект <strong>"Мужское дело"</strong> — это серверное веб-приложение, представляющее собой каталог товаров для одноименного гипотетического магазина. Уникальность проекта заключается в его концепции: он объединяет четыре разные тематики в единую структуру.</p>
+                <p>Проект <strong>"Мужское дело"</strong> — это серверное веб-приложение, представляющее собой каталог товаров для одноименного гипотетического магазина.</p>
                 <ul>
                     <li>🍔 Доставка еды (вариант №8)</li>
                     <li>📱 Электроника (вариант №21)</li>
@@ -240,18 +262,14 @@ const Views = {
                     <li>📚 Книги по философии (вариант №17)</li>
                 </ul>
 
-                <h2>🚀 Техническое задание и Реализация</h2>
-                <p>В основе проекта лежит самописный фреймворк, разработанный в соответствии со строгими требованиями лабораторной работы.</p>
+                <h2>⚙️ Реализация</h2>
                 <ul>
-                    <li><strong>Без фреймворков:</strong> Запрещено использование Express, Koa. Вся логика на Node.js.</li>
+                    <li><strong>Без фреймворков:</strong> Собственный Node.js фреймворк (без Express/Koa).</li>
                     <li><strong>Архитектура:</strong> RESTful API, EventEmmiter, Streams.</li>
                 </ul>
 
                 <h2>🌐 API</h2>
                 <p>Сервер предоставляет JSON API по адресам вида <code>/api/&lt;module&gt;</code>.</p>
-
-                <h2>📄 Лицензия</h2>
-                <p>Этот проект лицензирован под лицензией MIT.</p>
             </div>
         `;
     }
