@@ -29,9 +29,10 @@ const UI = {
                 <div class="modal confirm-modal">
                     <h3>Подтверждение</h3>
                     <p>${message}</p>
-                    <div class="confirm-actions">
-                        <button class="btn" style="background:#9ca3af" onclick="UI._closeConfirm()">Отмена</button>
-                        <button class="btn" style="background:#ef4444; color:white;" onclick="UI._runConfirm()">Да</button>
+                    <div class="modal-actions">
+                        <!-- ИСПРАВЛЕНИЕ ЗДЕСЬ: Убраны инлайн стили, добавлены классы -->
+                        <button class="btn btn-secondary" onclick="UI._closeConfirm()">Отмена</button>
+                        <button class="btn btn-danger" onclick="UI._runConfirm()">Да</button>
                     </div>
                 </div>
             </div>
@@ -82,4 +83,4 @@ export const handleLogin = async (e) => {
 };
 
 window.handleLogin = handleLogin;
-window.UI = UI; // Делаем UI глобальным, чтобы AdminForm мог использовать UI.toast
+window.UI = UI; // Делаем UI глобальным

@@ -160,26 +160,40 @@ export const Views = {
     `,
 
     admin: async () => {
+        // Проверка токена
         if (!api.token) {
             location.hash = '#login';
             return '';
         }
 
+        // Иконки (чистые SVG без инлайн стилей)
+        const ICONS = {
+            food: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line></svg>',
+            electronics: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line></svg>',
+            alcohol: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8a2 2 0 0 0 2-2v-9.4a1 1 0 0 0-.4-.8l-3.6-2.4V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2.4l-3.6 2.4a1 1 0 0 0-.4.8V19a2 2 0 0 0 2 2z"></path></svg>',
+            philosophy: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>'
+        };
+
         if (location.hash === '#admin') {
             const keys = Object.keys(ADMIN_CONFIG);
             const menuItems = keys.map(k => `
-                <div class="card" style="padding:2rem; text-align:center; cursor:pointer;" onclick="window.location.hash='#admin/${k}'">
-                    <div style="display:block; margin:0 auto 1rem; color: var(--accent-color);">${ICONS[k] || ''}</div>
+                <div class="card" style="padding:2rem; text-align:center; cursor:pointer; border:1px solid #e5e7eb; transition:all 0.2s;" onclick="window.location.hash='#admin/${k}'">
+                    <div style="display:block; margin:0 auto 1rem; color: var(--accent-color);">
+                        ${ICONS[k] || ''}
+                    </div>
                     <h3 style="margin-top:0;">${ADMIN_CONFIG[k].label}</h3>
                 </div>
             `).join('');
 
             return `
-                <h1 style="text-align:center;">Панель Администратора</h1>
-                <div class="items-grid" style="max-width:800px; margin:0 auto;">
+                <div style="text-align:center; padding-bottom: 2rem;">
+                    <h1 style="font-size: 1.75rem; color: var(--primary-color);">Панель Администратора</h1>
+                    <p style="color: var(--text-muted);">Выберите модуль для управления</p>
+                </div>
+                <div class="items-grid" style="max-width: 900px; margin: 0 auto;">
                     ${menuItems}
-                    <div class="card" style="padding:2rem; text-align:center; cursor:pointer; background:#fee2e2;" onclick="location.hash='#/'">
-                        <h3 style="margin-top:0;">Выход</h3>
+                    <div class="card" style="padding:2rem; text-align:center; cursor:pointer; background:#fee2e2; border:1px solid #fecaca;" onclick="location.hash='#/'">
+                        <h3 style="margin:0; color: #991b1b;">Выход на сайт</h3>
                     </div>
                 </div>
             `;
@@ -189,19 +203,23 @@ export const Views = {
         const currentModule = hashParts[1];
         const config = ADMIN_CONFIG[currentModule];
 
-        if (!config) return 'Модуль не найден';
+        if (!config) return '<div style="text-align:center; padding:2rem; color:var(--text-muted);">Модуль не найден</div>';
 
         const res = await api.get(config.endpoint);
         const items = res.data || [];
 
         const rows = items.map(item => `
             <tr>
-                <td style="font-family: monospace;">${item.id}</td>
-                <td><strong>${item.name || item.title}</strong></td>
-                <td>${item.price} BYN</td>
+                <td style="font-family: monospace; color: #64748b;">${item.id}</td>
                 <td>
-                    <button class="action-btn btn-edit" onclick="AdminForm.open('edit', ${JSON.stringify(item)}, '${currentModule}')">Ред.</button>
-                    <button class="action-btn btn-delete" onclick="deleteItem('${currentModule}', '${item.id}')">Удалить</button>
+                    <div style="font-weight: 500; color: var(--text-main);">${item.name || item.title}</div>
+                    <div style="font-size: 0.8rem; color: #94a3b8;">${item.price} BYN</div>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="action-btn btn-edit" onclick="AdminForm.open('edit', ${JSON.stringify(item)}, '${currentModule}')">Редактировать</button>
+                        <button class="action-btn btn-delete" onclick="deleteItem('${currentModule}', '${item.id}')">Удалить</button>
+                    </div>
                 </td>
             </tr>
         `).join('');
@@ -210,13 +228,13 @@ export const Views = {
             <div class="admin-layout">
                 <div class="admin-sidebar">
                     <div class="admin-menu-header">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                         <span>Админка</span>
                     </div>
                     
                     <div class="admin-menu-btn" onclick="location.hash='#admin'">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="8 6 12 2 16 6"></polyline></svg>
-                        <span>Меню</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect></svg>
+                        <span>Обзор</span>
                     </div>
                     
                     ${Object.keys(ADMIN_CONFIG).map(k => `
@@ -227,31 +245,36 @@ export const Views = {
                     `).join('')}
 
                     <div class="admin-menu-btn logout" onclick="localStorage.removeItem('auth_token'); api.setToken(null); location.hash='#login'">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 20 21 8 3"></polyline><line x1="12" y1="1" x2="12" y2="23"></line></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 20 21 8 3"></polyline><line x1="12" y1="1" x2="12" y2="23"></line></svg>
                         <span>Выйти</span>
                     </div>
                 </div>
                 <div class="admin-content">
-                    <div class="breadcrumb">
-                        <span>Главная</span> / <span>Админка</span> / <span>${config.label}</span>
-                    </div>
                     <div class="admin-header">
-                        <h2 style="margin:0;">Управление: ${config.label}</h2>
-                        <button class="btn btn-add" onclick="AdminForm.open('create', null, '${currentModule}')">+ Добавить</button>
+                        <div class="breadcrumb">
+                            <span>Главная</span> / <span>Админка</span> / <span style="color: var(--primary-color);">${config.label}</span>
+                        </div>
+                        <h2 style="margin:0; font-size: 1.5rem; color: var(--text-main);">${config.label}</h2>
+                        <button class="btn" style="background: var(--primary-color);" onclick="AdminForm.open('create', null, '${currentModule}')">
+                            <span style="margin-right: 6px;">+</span> Добавить запись
+                        </button>
                     </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Название</th>
-                                <th>Цена</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rows.length ? rows : '<tr><td colspan="4" style="text-align:center; padding:2rem;">Данных нет</td></tr>'}
-                        </tbody>
-                    </table>
+                    
+                    <div class="data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th width="100">ID</th>
+                                    <th>Название / Описание</th>
+                                    <th width="120">Цена</th>
+                                    <th width="150">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.length ? rows : '<tr><td colspan="4" style="text-align:center; padding: 3rem; color: #94a3b8;">Данные не найдены</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         `;

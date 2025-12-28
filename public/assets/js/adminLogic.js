@@ -46,7 +46,7 @@ const AdminForm = {
                     <form id="admin-form">
                         ${fieldsHTML}
                         <div class="modal-actions">
-                            <button type="button" class="btn" style="background:#9ca3af" onclick="AdminForm.close()">Отмена</button>
+                            <button type="button" class="btn btn-secondary" onclick="AdminForm.close()">Отмена</button>
                             <button type="submit" class="btn">Сохранить</button>
                         </div>
                     </form>
