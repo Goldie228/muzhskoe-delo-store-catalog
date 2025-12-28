@@ -11,11 +11,12 @@ export const admin = async () => {
         return '';
     }
 
+    // Экран выбора модуля
     if (location.hash === '#admin') {
         const keys = Object.keys(ADMIN_CONFIG);
         const menuItems = keys.map(k => `
             <div class="card" style="padding:2rem; text-align:center; cursor:pointer; border:1px solid #e5e7eb; transition:all 0.2s;" onclick="window.location.hash='#admin/${k}'">
-                <div style="display:block; margin:0 auto 1rem; color: var(--accent-color);">
+                <div style="display:flex; justify-content:center; align-items:center; height: 48px; margin-bottom:1rem;">
                     ${ICONS[k] || ''}
                 </div>
                 <h3 style="margin-top:0;">${ADMIN_CONFIG[k].label}</h3>
@@ -46,8 +47,8 @@ export const admin = async () => {
     const items = res.data || [];
 
     const rows = items.map(item => {
-        // --- Логика статуса ---
         let statusBadge = '';
+        
         if (item.hasOwnProperty('inStock')) {
             statusBadge = item.inStock ? 'В наличии' : 'Нет';
         } else if (item.hasOwnProperty('isAvailable')) {
@@ -59,21 +60,17 @@ export const admin = async () => {
         return `
             <tr>
                 <td style="font-family: monospace; color: #64748b;">${item.id}</td>
-                <td><strong>${item.name || item.title}</strong></td>
-                <td>${statusBadge || '-'}</td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <strong>${item.name || item.title}</strong>
+                        ${statusBadge ? `<div>${statusBadge}</div>` : ''}
+                    </div>
+                </td>
                 <td>${item.price} BYN</td>
                 <td>
                     <div style="display: flex; gap: 8px;">
-                        <!-- Используем window.openEdit, чтобы избежать JSON.stringify в HTML -->
-                        <button class="action-btn btn-edit" 
-                                onclick="window.openEdit('${item.id}', '${currentModule}')">
-                            Редактировать
-                        </button>
-                        
-                        <button class="action-btn btn-delete" 
-                                onclick="deleteItem('${currentModule}', '${item.id}')">
-                            Удалить
-                        </button>
+                        <button class="action-btn btn-edit" onclick="window.openEdit('${item.id}', '${currentModule}')">Редактировать</button>
+                        <button class="action-btn btn-delete" onclick="deleteItem('${currentModule}', '${item.id}')">Удалить</button>
                     </div>
                 </td>
             </tr>
@@ -100,19 +97,22 @@ export const admin = async () => {
                     </div>
                 `).join('')}
 
-                <div class="admin-menu-btn logout" onclick="localStorage.removeItem('auth_token'); api.setToken(null); location.hash='#login'">
+                <div class="admin-menu-btn logout" onclick="window.logoutAdmin()">
                     ${ICONS.logout}
                     <span>Выйти</span>
                 </div>
             </div>
             <div class="admin-content">
                 <div class="admin-header">
-                    <div style="display:flex; align-items:center; gap:10px;">
+                    <!-- Группа слева: Крошки + Заголовок -->
+                    <div style="display:flex; flex-direction:column; gap:4px;">
                         <div class="breadcrumb">
                             <span>Главная</span> / <span>Админка</span> / <span style="color: var(--primary-color);">${config.label}</span>
                         </div>
                         <h2 style="margin:0; font-size: 1.5rem; color: var(--text-main);">${config.label}</h2>
                     </div>
+
+                    <!-- Кнопка справа -->
                     <button class="btn" style="background: var(--primary-color); margin-left: auto;" onclick="AdminForm.open('create', null, '${currentModule}')">
                         <span style="margin-right: 6px;">+</span> Добавить запись
                     </button>
@@ -124,7 +124,6 @@ export const admin = async () => {
                             <tr>
                                 <th width="100">ID</th>
                                 <th>Название / Описание</th>
-                                <th width="150">Статус</th>
                                 <th width="150">Цена</th>
                                 <th width="150">Действия</th>
                             </tr>

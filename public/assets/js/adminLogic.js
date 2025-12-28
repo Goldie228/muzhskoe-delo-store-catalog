@@ -9,7 +9,6 @@ const AdminForm = {
         const modal = document.getElementById('modal-container');
         if (!modal) return;
 
-        // Генерация полей формы
         let fieldsHTML = config.fields.map(field => {
             const value = (mode === 'edit' && item) ? (item[field.key] || '') : '';
 
@@ -96,8 +95,6 @@ const AdminForm = {
                 UI.toast('Запись успешно обновлена', 'success');
             }
             AdminForm.close();
-            
-            // Мгновенное обновление
             if (window.router) {
                 window.router.handleRoute();
             }
@@ -112,31 +109,12 @@ const AdminForm = {
 export { AdminForm };
 window.AdminForm = AdminForm;
 
-/**
- * Глобальная функция открытия редактирования.
- * Позволяет безопасно передавать ID через onclick без JSON.stringify.
- */
-window.openEdit = async (id, moduleKey) => {
-    try {
-        const endpoint = ADMIN_CONFIG[moduleKey].endpoint;
-        const res = await api.get(`${endpoint}/${id}`);
-        // Передаем полученный объект целиком в AdminForm
-        AdminForm.open('edit', res.data, moduleKey);
-    } catch (error) {
-        console.error('Ошибка загрузки данных для редактирования:', error);
-        UI.toast('Не удалось загрузить данные', 'error');
-    }
-};
 
-/**
- * Глобальная функция удаления
- */
 export const deleteItem = async (moduleKey, id) => {
     UI.confirm('Вы уверены, что хотите удалить запись?', async () => {
         try {
             await api.delete(ADMIN_CONFIG[moduleKey].endpoint + '/' + id);
             UI.toast('Запись удалена', 'success');
-            
             if (window.router) {
                 window.router.handleRoute();
             }
@@ -147,3 +125,15 @@ export const deleteItem = async (moduleKey, id) => {
 };
 
 window.deleteItem = deleteItem;
+
+/**
+ * Функция выхода из админки
+ * Делаем глобальной, чтобы работала через onclick
+ */
+export const logoutAdmin = () => {
+    localStorage.removeItem('auth_token');
+    api.setToken(null);
+    location.hash = '#login';
+};
+
+window.logoutAdmin = logoutAdmin;
