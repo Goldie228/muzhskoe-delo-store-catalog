@@ -11,32 +11,23 @@ const AdminForm = {
         const config = ADMIN_CONFIG[moduleKey];
         const modal = document.getElementById('modal-container');
         if (!modal) return;
-        
+
+        // Генерация полей формы
         let fieldsHTML = config.fields.map(field => {
+            // Если редактирование, берем значения из item
             const value = (mode === 'edit' && item) ? (item[field.key] || '') : '';
             
-            if (field.type === 'checkbox') {
-                return `
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" name="${field.key}" class="form-control" ${value ? 'checked' : ''}>
-                            ${field.label}
-                        </label>
-                    </div>`;
-            } else if (Array.isArray(value)) {
-                 const strVal = value.join(', ');
-                 return `
-                    <div class="form-group">
-                        <label>${field.label}</label>
-                        <input type="${field.type}" name="${field.key}" value="${strVal}" class="form-control">
-                    </div>`;
-            } else {
-                return `
-                    <div class="form-group">
-                        <label>${field.label}</label>
-                        <input type="${field.type}" name="${field.key}" value="${value}" class="form-control">
-                    </div>`;
-            }
+            // Обработка массивов (ингредиенты и т.д.)
+            const inputValue = Array.isArray(value) ? value.join(', ') : value;
+
+            return `
+                <div class="form-group">
+                    <label>${field.label}</label>
+                    ${field.type === 'checkbox' 
+                        ? `<input type="checkbox" name="${field.key}" class="form-control" ${value ? 'checked' : ''}> ${field.label}` 
+                        : `<input type="${field.type}" name="${field.key}" value="${inputValue}" class="form-control">`
+                    }
+                </div>`;
         }).join('');
 
         modal.innerHTML = `
@@ -54,12 +45,10 @@ const AdminForm = {
             </div>
         `;
 
+        // Повешиваем слушатель на форму (каждый раз новую форму, чтобы не дублировать события)
         const form = document.getElementById('admin-form');
         if (form) {
-            const newForm = form.cloneNode(true);
-            form.parentNode.replaceChild(newForm, form);
-
-            newForm.addEventListener('submit', async (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 await AdminForm.submit(mode, item, moduleKey);
             });
@@ -78,7 +67,7 @@ const AdminForm = {
         ADMIN_CONFIG[moduleKey].fields.forEach(field => {
             if (field.type === 'checkbox') {
                 data[field.key] = !!formData.get(field.key);
-            } else if (field.key.includes('ingredients') || field.key.includes('tags') || field.key.includes('specifications')) {
+            } else if (field.key.includes('ingredients') || field.key.includes('tags')) {
                 const val = formData.get(field.key);
                 data[field.key] = val ? val.split(',').map(s => s.trim()) : [];
             } else {
@@ -94,8 +83,12 @@ const AdminForm = {
                 await api.put(`${ADMIN_CONFIG[moduleKey].endpoint}/${item.id}`, data);
                 UI.toast('Запись успешно обновлена', 'success');
             }
+            
             AdminForm.close();
-            location.hash = '#admin/' + moduleKey;
+            // ОБНОВЛЕНИЕ ДАННЫХ БЕЗ ПЕРЕЗАГРУЗКИ
+            if (window.router) {
+                window.router.handleRoute();
+            }
         } catch (error) {
             UI.toast('Ошибка сохранения: ' + error.message, 'error');
         }
@@ -103,7 +96,8 @@ const AdminForm = {
 };
 
 export { AdminForm };
-window.AdminForm = AdminForm; // Делаем глобальным для onclick
+window.AdminForm = AdminForm; // Глобально для onclick
+
 
 /**
  * Глобальная функция удаления
@@ -113,9 +107,13 @@ export const deleteItem = async (moduleKey, id) => {
         try {
             await api.delete(ADMIN_CONFIG[moduleKey].endpoint + '/' + id);
             UI.toast('Запись удалена', 'success');
-            location.hash = '#admin/' + moduleKey;
-        } catch (e) {
-            UI.toast('Ошибка удаления: ' + e.message, 'error');
+            
+            // ОБНОВЛЕНИЕ ДАННЫХ БЕЗ ПЕРЕЗАГРУЗКИ
+            if (window.router) {
+                window.router.handleRoute();
+            }
+        } catch (error) {
+            UI.toast('Ошибка удаления: ' + error.message, 'error');
         }
     });
 };
