@@ -3,9 +3,6 @@ import { api } from './api.js';
 import { ADMIN_CONFIG } from './config.js';
 import { UI } from './ui.js';
 
-/**
- * Утилита для рендера форм
- */
 const AdminForm = {
     open(mode, item, moduleKey) {
         const config = ADMIN_CONFIG[moduleKey];
@@ -17,7 +14,6 @@ const AdminForm = {
             const value = (mode === 'edit' && item) ? (item[field.key] || '') : '';
 
             if (field.type === 'checkbox') {
-                // Фикс: делаем label flex-контейнером
                 return `
                     <div class="form-group" style="display:flex; align-items:center; gap:10px;">
                         <input type="checkbox" name="${field.key}" class="form-control" style="width:auto;" ${value ? 'checked' : ''}>
@@ -54,7 +50,6 @@ const AdminForm = {
             </div>
         `;
 
-        // Вешаем слушатель
         const form = document.getElementById('admin-form');
         if (form) {
             const newForm = form.cloneNode(true);
@@ -76,7 +71,6 @@ const AdminForm = {
         const formData = new FormData(document.getElementById('admin-form'));
         const data = {};
         
-        // Список полей, которые нужно привести к числам
         const numberFields = ['price', 'volume', 'strength', 'voltage', 'current', 'birthYear', 'foundedYear', 'sortOrder'];
 
         ADMIN_CONFIG[moduleKey].fields.forEach(field => {
@@ -85,13 +79,10 @@ const AdminForm = {
             if (field.type === 'checkbox') {
                 data[field.key] = val === 'on';
             } else if (field.key.includes('ingredients') || field.key.includes('tags') || field.key.includes('specifications')) {
-                // Массивы
                 data[field.key] = val ? val.split(',').map(s => s.trim()) : [];
             } else if (numberFields.includes(field.key)) {
-                // Числа
                 data[field.key] = parseFloat(val) || 0;
             } else {
-                // Строки
                 data[field.key] = val;
             }
         });
@@ -106,13 +97,12 @@ const AdminForm = {
             }
             AdminForm.close();
             
-            // --- ВАЖНО: МГНОВЕННОЕ ОБНОВЛЕНИЕ ---
-            // Не меняем хеш (вызывает перерисовку), а вызываем роутер напрямую.
+            // Мгновенное обновление
             if (window.router) {
                 window.router.handleRoute();
             }
         } catch (error) {
-            console.error('Ошибка API:', error);
+            console.error('Ошибка сохранения:', error);
             const errorMessage = error.response?.data?.message || error.message || 'Неизвестная ошибка';
             UI.toast(`Ошибка: ${errorMessage}`, 'error');
         }
@@ -120,8 +110,23 @@ const AdminForm = {
 };
 
 export { AdminForm };
-window.AdminForm = AdminForm; // Глобально для onclick
+window.AdminForm = AdminForm;
 
+/**
+ * Глобальная функция открытия редактирования.
+ * Позволяет безопасно передавать ID через onclick без JSON.stringify.
+ */
+window.openEdit = async (id, moduleKey) => {
+    try {
+        const endpoint = ADMIN_CONFIG[moduleKey].endpoint;
+        const res = await api.get(`${endpoint}/${id}`);
+        // Передаем полученный объект целиком в AdminForm
+        AdminForm.open('edit', res.data, moduleKey);
+    } catch (error) {
+        console.error('Ошибка загрузки данных для редактирования:', error);
+        UI.toast('Не удалось загрузить данные', 'error');
+    }
+};
 
 /**
  * Глобальная функция удаления
@@ -132,12 +137,10 @@ export const deleteItem = async (moduleKey, id) => {
             await api.delete(ADMIN_CONFIG[moduleKey].endpoint + '/' + id);
             UI.toast('Запись удалена', 'success');
             
-            // --- ВАЖНО: МГНОВЕННОЕ ОБНОВЛЕНИЕ ---
             if (window.router) {
                 window.router.handleRoute();
             }
         } catch (error) {
-            console.error('Ошибка удаления:', error);
             UI.toast('Ошибка удаления: ' + error.message, 'error');
         }
     });

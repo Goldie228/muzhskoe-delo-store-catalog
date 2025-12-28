@@ -6,13 +6,11 @@ import { AdminForm } from '../adminLogic.js';
 import { deleteItem } from '../adminLogic.js';
 
 export const admin = async () => {
-    // Проверка токена
     if (!api.token) {
         location.hash = '#login';
         return '';
     }
 
-    // Экран выбора модуля
     if (location.hash === '#admin') {
         const keys = Object.keys(ADMIN_CONFIG);
         const menuItems = keys.map(k => `
@@ -48,21 +46,14 @@ export const admin = async () => {
     const items = res.data || [];
 
     const rows = items.map(item => {
-        // --- Логика статуса "В наличии" ---
+        // --- Логика статуса ---
         let statusBadge = '';
-        
         if (item.hasOwnProperty('inStock')) {
-            statusBadge = item.inStock 
-                ? '<span style="color:#10b981; font-weight:600; font-size:0.85em;">В наличии</span>' 
-                : '<span style="color:#ef4444; font-weight:600; font-size:0.85em;">Нет</span>';
+            statusBadge = item.inStock ? 'В наличии' : 'Нет';
         } else if (item.hasOwnProperty('isAvailable')) {
-             statusBadge = item.isAvailable 
-                ? '<span style="color:#10b981; font-weight:600; font-size:0.85em;">В наличии</span>' 
-                : '<span style="color:#ef4444; font-weight:600; font-size:0.85em;">Нет</span>';
+             statusBadge = item.isAvailable ? 'В наличии' : 'Нет';
         } else if (item.hasOwnProperty('isInStock')) {
-             statusBadge = item.isInStock 
-                ? '<span style="color:#10b981; font-weight:600; font-size:0.85em;">В наличии</span>' 
-                : '<span style="color:#ef4444; font-weight:600; font-size:0.85em;">Нет</span>';
+             statusBadge = item.isInStock ? 'В наличии' : 'Нет';
         }
 
         return `
@@ -73,8 +64,16 @@ export const admin = async () => {
                 <td>${item.price} BYN</td>
                 <td>
                     <div style="display: flex; gap: 8px;">
-                        <button class="action-btn btn-edit" onclick="AdminForm.open('edit', ${JSON.stringify(item)}, '${currentModule}')">Редактировать</button>
-                        <button class="action-btn btn-delete" onclick="deleteItem('${currentModule}', '${item.id}')">Удалить</button>
+                        <!-- Используем window.openEdit, чтобы избежать JSON.stringify в HTML -->
+                        <button class="action-btn btn-edit" 
+                                onclick="window.openEdit('${item.id}', '${currentModule}')">
+                            Редактировать
+                        </button>
+                        
+                        <button class="action-btn btn-delete" 
+                                onclick="deleteItem('${currentModule}', '${item.id}')">
+                            Удалить
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -114,7 +113,6 @@ export const admin = async () => {
                         </div>
                         <h2 style="margin:0; font-size: 1.5rem; color: var(--text-main);">${config.label}</h2>
                     </div>
-                    <!-- Кнопка прижата к правому краю через margin-left: auto -->
                     <button class="btn" style="background: var(--primary-color); margin-left: auto;" onclick="AdminForm.open('create', null, '${currentModule}')">
                         <span style="margin-right: 6px;">+</span> Добавить запись
                     </button>
@@ -126,8 +124,8 @@ export const admin = async () => {
                             <tr>
                                 <th width="100">ID</th>
                                 <th>Название / Описание</th>
-                                <th width="120">Статус</th>
-                                <th width="120">Цена</th>
+                                <th width="150">Статус</th>
+                                <th width="150">Цена</th>
                                 <th width="150">Действия</th>
                             </tr>
                         </thead>
