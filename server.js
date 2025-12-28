@@ -3,7 +3,7 @@ const App = require('./core/App');
 const bodyParser = require('./core/middleware/bodyParser');
 const staticMiddleware = require('./core/middleware/static');
 const { errorHandler } = require('./core/middleware/errorHandler');
-const { authMiddleware } = require('./core/middleware/auth'); // Путь к файлу auth.js
+const { authMiddleware } = require('./core/middleware/auth');
 const fs = require('fs').promises;
 const path = require('path');
 

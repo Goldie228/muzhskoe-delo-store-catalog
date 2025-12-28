@@ -81,7 +81,7 @@ class Router {
 
 // Инициализация и экспорт роутера
 const router = new Router();
-window.router = router; // Делаем глобальным для использования в adminLogic.js
+window.router = router;
 
 // Регистрация маршрутов
 router.addRoute('/', Views.home);

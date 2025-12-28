@@ -69,8 +69,6 @@ export const createCardHTML = (item) => {
       : `<span class="badge out-of-stock">Нет</span>`;
   }
 
-  // Используем Flexbox внутри карточки, чтобы контент занимал место, а badge был снизу
-  // Убираем фиксированную высоту у заголовка
   return `
     <div class="card" style="display: flex; flex-direction: column; height: 100%;">
       <div class="card-header">

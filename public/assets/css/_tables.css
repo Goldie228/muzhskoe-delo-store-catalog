@@ -46,7 +46,7 @@
 }
 
 .data-table tr:nth-child(even) {
-    background-color: #f9fafb; /* Зебра */
+    background-color: #f9fafb;
 }
 
 .data-table tr:hover {
