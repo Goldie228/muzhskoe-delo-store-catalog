@@ -1,6 +1,6 @@
 
 import { api } from './api.js';
-import { Views } from './views.js';
+import { Views } from './views/index.js';
 import { ICONS } from './icons.js';
 
 // --- ИНЪЕКЦИЯ ИКОНОК ---
