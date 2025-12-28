@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Мужское дело - Каталог товаров (Еда, Электроника, Алкоголь, Книги)">
+    <title>Мужское Дело | Каталог</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Шапка -->
+        <header class="site-header">
+            <div class="container header-inner">
+                <a href="#/" class="logo">
+                    <span class="nav-icon" data-icon="bag"></span>
+                    <span>Мужское Дело</span>
+                </a>
+
+                <nav class="main-nav">
+                    <a href="#/" class="nav-link">
+                        <span class="nav-icon" data-icon="home"></span>
+                        <span>Главная</span>
+                    </a>
+                    <a href="#food" class="nav-link">
+                        <span class="nav-icon" data-icon="food"></span>
+                        <span>Еда</span>
+                    </a>
+                    <a href="#electronics" class="nav-link">
+                        <span class="nav-icon" data-icon="electronics"></span>
+                        <span>Электроника</span>
+                    </a>
+                    <a href="#alcohol" class="nav-link">
+                        <span class="nav-icon" data-icon="alcohol"></span>
+                        <span>Напитки</span>
+                    </a>
+                    <a href="#philosophy" class="nav-link">
+                        <span class="nav-icon" data-icon="philosophy"></span>
+                        <span>Книги</span>
+                    </a>
+                    <div class="nav-divider"></div>
+                    <a href="#authors" class="nav-link secondary">
+                        <span class="nav-icon" data-icon="users"></span>
+                        <span>Авторы</span>
+                    </a>
+                    <a href="#info" class="nav-link secondary">
+                        <span class="nav-icon" data-icon="info"></span>
+                        <span>Инфо</span>
+                    </a>
+                    <div class="nav-divider"></div>
+                    <a href="#admin" class="nav-link secondary">
+                        <span class="nav-icon" data-icon="lock"></span>
+                        <span>Админ</span>
+                    </a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="site-content">
+            <div id="app" class="container">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Загрузка...</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Футер -->
+        <footer class="site-footer">
+            <div class="container footer-content">
+                <div class="footer-col">
+                    <strong>Мужское Дело</strong>
+                    <p>&copy; 2025. Лабораторные работы №9-10.</p>
+                </div>
+                <div class="footer-col">
+                    <a href="https://github.com/Goldie228/muzhskoe-delo-store-catalog" target="_blank" class="github-link">
+                        <span class="nav-icon" data-icon="github"></span>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Контейнер для модального окна админки -->
+    <div id="modal-container"></div>
+
+    <!-- Контейнер для всплывающих уведомлений -->
+    <div id="toast-container"></div>
+
+    <script type="module" src="/assets/js/app.js"></script>
+</body>
+</html>

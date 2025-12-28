@@ -1,6 +1,6 @@
 
 const path = require('path');
-const fileManager = require('../../../lib/fileManager');
+const { fileManager } = require('../../../lib/fileManager');
 
 class ManufacturersService {
     constructor() {
@@ -12,7 +12,8 @@ class ManufacturersService {
         try {
             const exists = await fileManager.fileExists(this.dataFile);
             if (!exists) {
-                await fileManager.writeFile(this.dataFile, JSON.stringify([]));
+                // Используем writeJSON (передаем массив, а не строку)
+                await fileManager.writeJSON(this.dataFile, []);
                 console.log('Файл данных для производителей создан');
             }
         } catch (error) {
@@ -22,8 +23,8 @@ class ManufacturersService {
 
     async getAllManufacturers() {
         try {
-            const data = await fileManager.readFile(this.dataFile);
-            return JSON.parse(data);
+            const data = await fileManager.readJSON(this.dataFile);
+            return data; // readJSON уже возвращает массив
         } catch (error) {
             console.error('Ошибка при получении производителей:', error);
             throw new Error('Не удалось получить список производителей');
@@ -32,7 +33,7 @@ class ManufacturersService {
 
     async getManufacturerById(id) {
         try {
-            const manufacturers = await this.getAllManufacturers();
+            const manufacturers = await fileManager.readJSON(this.dataFile);
             const manufacturer = manufacturers.find(item => item.id === id);
             
             if (!manufacturer) {
@@ -48,15 +49,18 @@ class ManufacturersService {
 
     async createManufacturer(manufacturerData) {
         try {
-            const manufacturers = await this.getAllManufacturers();
+            const manufacturers = await fileManager.readJSON(this.dataFile);
             const newManufacturer = {
                 id: Date.now().toString(),
                 ...manufacturerData,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             };
             
             manufacturers.push(newManufacturer);
-            await fileManager.writeFile(this.dataFile, JSON.stringify(manufacturers, null, 2));
+            
+            // Используем writeJSON
+            await fileManager.writeJSON(this.dataFile, manufacturers);
             
             return newManufacturer;
         } catch (error) {
@@ -67,7 +71,7 @@ class ManufacturersService {
 
     async updateManufacturer(id, updateData) {
         try {
-            const manufacturers = await this.getAllManufacturers();
+            const manufacturers = await fileManager.readJSON(this.dataFile);
             const index = manufacturers.findIndex(item => item.id === id);
             
             if (index === -1) {
@@ -79,10 +83,12 @@ class ManufacturersService {
                 ...manufacturers[index],
                 ...updateData,
                 id,
-                createdAt
+                createdAt,
+                updatedAt: new Date().toISOString()
             };
             
-            await fileManager.writeFile(this.dataFile, JSON.stringify(manufacturers, null, 2));
+            // Используем writeJSON
+            await fileManager.writeJSON(this.dataFile, manufacturers);
             
             return manufacturers[index];
         } catch (error) {
@@ -93,15 +99,17 @@ class ManufacturersService {
 
     async deleteManufacturer(id) {
         try {
-            const manufacturers = await this.getAllManufacturers();
-            const index = manufacturers.findIndex(item => item.id === id);
+            const data = await fileManager.readJSON(this.dataFile);
+            const index = data.findIndex(item => item.id === id);
             
             if (index === -1) {
                 throw new Error(`Производитель с ID ${id} не найден`);
             }
             
-            const deletedManufacturer = manufacturers.splice(index, 1)[0];
-            await fileManager.writeFile(this.dataFile, JSON.stringify(manufacturers, null, 2));
+            const deletedManufacturer = data.splice(index, 1)[0];
+            
+            // Используем writeJSON
+            await fileManager.writeJSON(this.dataFile, data);
             
             return deletedManufacturer;
         } catch (error) {
@@ -112,7 +120,7 @@ class ManufacturersService {
 
     async getManufacturersByCountry(country) {
         try {
-            const manufacturers = await this.getAllManufacturers();
+            const manufacturers = await fileManager.readJSON(this.dataFile);
             return manufacturers.filter(item => 
                 item.country.toLowerCase() === country.toLowerCase()
             );
@@ -124,7 +132,7 @@ class ManufacturersService {
 
     async getCertifiedManufacturers() {
         try {
-            const manufacturers = await this.getAllManufacturers();
+            const manufacturers = await fileManager.readJSON(this.dataFile);
             return manufacturers.filter(item => item.isCertified === true);
         } catch (error) {
             console.error('Ошибка при получении сертифицированных производителей:', error);

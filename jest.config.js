@@ -1,38 +1,51 @@
+
 /*
  * Конфигурация Jest для тестирования проекта
  */
 module.exports = {
-  // Окружение выполнения тестов
+  // Окружение
   testEnvironment: 'node',
-  
-  // Шаблоны для поиска тестовых файлов
+
+  // Шаблоны для поиска тестов
   testMatch: [
     '**/tests/**/*.test.js',
     '**/?(*.)+(spec|test).js'
   ],
-  
-  // Файлы для анализа покрытия кода
+
+  // Сбор покрытия
   collectCoverageFrom: [
     'core/**/*.js',
     'lib/**/*.js',
+    'blueprints/**/*.js',
+    'server.js',
+    // Исключаем фронтенд
+    '!**/public/**',
     '!**/node_modules/**'
   ],
-  
-  // Директория для сохранения отчетов о покрытии
+
+  // Директория отчетов
   coverageDirectory: 'coverage',
-  
-  // Форматы отчетов о покрытии
+
+  // Форматы отчетов
   coverageReporters: ['text', 'lcov', 'html'],
-  
-  // Игнорируемые пути при поиске тестов
+
+  // Игнорируемые пути
   testPathIgnorePatterns: [
     '/node_modules/',
     '/blueprints/template/'
   ],
-  
-  // Файл, выполняемый перед каждым тестом
+
+  // Файлы setup/teardown
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
-  
-  // Файл, выполняемый после всех тестов
-  globalTeardown: '<rootDir>/tests/teardown.js'
+  globalTeardown: '<rootDir>/tests/teardown.js',
+
+  // --- НАСТРОЙКА BABEL ---
+  transform: {
+    '^.+\\.(js|jsx)$': '<rootDir>/node_modules/babel-jest'
+  },
+
+  // Игнорируем папку с фронтендом (без Regex, просто путь)
+  transformIgnorePatterns: [
+    '<rootDir>/public/assets'
+  ]
 };

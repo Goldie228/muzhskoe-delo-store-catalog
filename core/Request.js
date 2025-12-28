@@ -10,7 +10,6 @@ class Request {
     if (!(req instanceof IncomingMessage)) throw new TypeError('req должен быть IncomingMessage');
     this._req = req;
 
-    // Поля, которые мы добавляем
     this.params = {};
     this.query = {};
     this.body = null;

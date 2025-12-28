@@ -1,5 +1,25 @@
 
+const fs = require('fs');
 const { ServerResponse } = require('http');
+const path = require('path');
+
+// Простая карта MIME-типов для статических файлов
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.eot': 'application/vnd.ms-fontobject',
+};
 
 /*
  * Класс Response - обёртка над нативным объектом ServerResponse
@@ -12,11 +32,6 @@ class Response {
     this.finished = false;
   }
 
-  /*
-   * Установка статуса ответа
-   * @param {number} code - HTTP статус код
-   * @returns {Response} - возвращает экземпляр для цепочки вызовов
-   */
   status(code) {
     if (!Number.isInteger(code) || code < 100 || code > 599) {
       throw new TypeError('Некорректный HTTP статус код');
@@ -25,22 +40,12 @@ class Response {
     return this;
   }
 
-  /*
-   * Установка заголовка, если он еще не установлен
-   * @param {string} name - имя заголовка
-   * @param {string} value - значение заголовка
-   */
   _ensureHeader(name, value) {
     if (!this._res.getHeader(name)) {
       this._res.setHeader(name, value);
     }
   }
 
-  /*
-   * Отправка JSON-ответа
-   * @param {*} data - данные для сериализации в JSON
-   * @returns {Response} - возвращает экземпляр для цепочки вызовов
-   */
   json(data) {
     try {
       const body = JSON.stringify(data);
@@ -49,7 +54,6 @@ class Response {
       if (!this._res.headersSent) this._res.write(body);
       this._end();
     } catch (err) {
-      // Если сериализация упала — отправляем 500 или безопасное сообщение
       if (!this._res.headersSent) {
         this._res.statusCode = 500;
         const fallback = JSON.stringify({ error: 'Ошибка сериализации ответа' });
@@ -62,14 +66,8 @@ class Response {
     return this;
   }
 
-  /*
-   * Отправка ответа различных типов
-   * @param {*} data - данные для отправки
-   * @returns {Response} - возвращает экземпляр для цепочки вызовов
-   */
   send(data) {
     if (data === null || data === undefined) {
-      // Пустой ответ
       if (!this._res.headersSent) {
         this._res.setHeader('Content-Length', 0);
       }
@@ -77,7 +75,6 @@ class Response {
       return this;
     }
 
-    // Buffer
     if (Buffer.isBuffer(data)) {
       this._ensureHeader('Content-Type', 'application/octet-stream');
       this._res.setHeader('Content-Length', data.length);
@@ -86,10 +83,8 @@ class Response {
       return this;
     }
 
-    // Stream (readable)
     if (data && typeof data.pipe === 'function') {
       this._ensureHeader('Content-Type', 'application/octet-stream');
-      // Не устанавливаем Content-Length для стрима
       data.pipe(this._res);
       data.on('end', () => this._end());
       data.on('error', () => {
@@ -103,10 +98,8 @@ class Response {
       return this;
     }
 
-    // Object -> JSON
     if (typeof data === 'object') return this.json(data);
 
-    // Primitive -> text
     const str = String(data);
     this._ensureHeader('Content-Type', 'text/plain; charset=utf-8');
     this._res.setHeader('Content-Length', Buffer.byteLength(str));
@@ -115,24 +108,55 @@ class Response {
     return this;
   }
 
-  /*
-   * Завершение ответа
+  /**
+   * Отправка статического файла из файловой системы.
    */
+  sendFile(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+    const stream = fs.createReadStream(filePath);
+
+    stream.on('open', () => {
+      this._ensureHeader('Content-Type', contentType);
+      stream.pipe(this._res);
+    });
+
+    stream.on('error', (err) => {
+      // Если заголовки уже отправлены (началась передача файла), не можем отправить JSON ошибку
+      if (this._res.headersSent) {
+        console.error(`\x1b[31m[ERROR]\x1b[0m Ошибка потока файла ${filePath} после начала передачи:`, err);
+        stream.destroy();
+        this._res.end(); // Просто закрываем соединение
+        return;
+      }
+
+      if (err.code === 'ENOENT') {
+        this.status(404).send('Файл не найден');
+      } else if (err.code === 'EACCES') {
+        this.status(403).send('Доступ запрещен');
+      } else {
+        console.error(`\x1b[31m[ERROR]\x1b[0m Ошибка чтения файла ${filePath}:`, err);
+        this.status(500).send('Ошибка сервера при чтении файла');
+      }
+    });
+
+    stream.on('end', () => {
+      this._end();
+    });
+
+    return this;
+  }
+
   _end() {
     if (!this.finished && !this._res.writableEnded) {
       try {
         this._res.end();
-      } catch (e) {
-        // игнорируем ошибки при завершении
-      }
+      } catch (e) {}
     }
     this.finished = true;
   }
 
-  /*
-   * Геттер для проверки, были ли отправлены заголовки
-   * @returns {boolean} - true если заголовки отправлены
-   */
   get headersSent() {
     return this._res.headersSent;
   }

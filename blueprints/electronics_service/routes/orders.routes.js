@@ -1,18 +1,20 @@
 
-const { Router } = require('express');
 const OrdersController = require('../controllers/OrdersController');
 
-const router = Router();
-const controller = new OrdersController();
+module.exports = function(app) {
+  const controller = new OrdersController();
 
-router.get('/orders', controller.getAllOrders.bind(controller));
-router.get('/orders/:id', controller.getOrderById.bind(controller));
-router.post('/orders', controller.createOrder.bind(controller));
-router.put('/orders/:id', controller.updateOrder.bind(controller));
-router.delete('/orders/:id', controller.deleteOrder.bind(controller));
+  // Базовые CRUD операции
+  app.get('/api/electronics/orders', controller.getAllOrders.bind(controller));
+  app.get('/api/electronics/orders/:id', controller.getOrderById.bind(controller));
+  app.post('/api/electronics/orders', controller.createOrder.bind(controller));
+  app.put('/api/electronics/orders/:id', controller.updateOrder.bind(controller));
+  app.delete('/api/electronics/orders/:id', controller.deleteOrder.bind(controller));
 
-router.get('/orders/status/:status', controller.getOrdersByStatus.bind(controller));
-router.get('/orders/customer/:customerName', controller.getOrdersByCustomer.bind(controller));
-router.patch('/orders/:id/status', controller.updateOrderStatus.bind(controller));
-
-module.exports = router;
+  // Дополнительные маршруты
+  app.get('/api/electronics/orders/status/:status', controller.getOrdersByStatus.bind(controller));
+  app.get('/api/electronics/orders/customer/:customerName', controller.getOrdersByCustomer.bind(controller));
+  
+  // Обновление статуса
+  app.patch('/api/electronics/orders/:id/status', controller.updateOrderStatus.bind(controller));
+};
