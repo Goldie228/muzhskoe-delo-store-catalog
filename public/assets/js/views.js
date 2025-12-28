@@ -4,40 +4,36 @@ import { createCardHTML } from './components.js';
 import { ADMIN_CONFIG } from './config.js';
 import { AdminForm } from './adminLogic.js';
 import { deleteItem } from './adminLogic.js';
-
-const ICONS = {
-    food: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line></svg>',
-    electronics: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line></svg>',
-    alcohol: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8a2 2 0 0 0 2-2v-9.4a1 1 0 0 0-.4-.8l-3.6-2.4V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2.4l-3.6 2.4a1 1 0 0 0-.4.8V19a2 2 0 0 0 2 2z"></path></svg>',
-    philosophy: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>'
-};
+import { ICONS } from './icons.js';
 
 export const Views = {
+    // --- ГЛАВНАЯ ---
     home: () => `
         <div class="hero">
             <h2>Мужское Дело</h2>
             <p>Всё необходимое для современного мужчины: от инструментов до книг, от техники до элитного алкоголя.</p>
             <div class="items-grid">
                 <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#food'">
-                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+                    ${ICONS.foodLarge}
                     <h3 style="margin-top:0;">Еда</h3>
                 </div>
                 <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#electronics'">
-                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                    ${ICONS.electronicsLarge}
                     <h3 style="margin-top:0;">Электроника</h3>
                 </div>
                 <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#alcohol'">
-                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M8 21h8a2 2 0 0 0 2-2v-9.4a1 1 0 0 0-.4-.8l-3.6-2.4V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2.4l-3.6 2.4a1 1 0 0 0-.4.8V19a2 2 0 0 0 2 2z"></path></svg>
+                    ${ICONS.alcoholLarge}
                     <h3 style="margin-top:0;">Напитки</h3>
                 </div>
                 <div class="card" style="cursor: pointer; text-align:center; padding: 2rem;" onclick="window.location.hash='#philosophy'">
-                    <svg style="display:block; margin:0 auto 1rem;" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    ${ICONS.philosophyLarge}
                     <h3 style="margin-top:0;">Книги</h3>
                 </div>
             </div>
         </div>
     `,
 
+    // --- СТРАНИЦЫ КАТЕГОРИЙ ---
     food: async () => {
         const res = await api.get('/food');
         const items = res.data || [];
@@ -78,6 +74,7 @@ export const Views = {
         `;
     },
 
+    // --- ИНФОРМАЦИОННЫЕ СТРАНИЦЫ ---
     authors: () => {
         const authors = [
             { name: 'Кажуро Глеб', role: 'ТимЛид, Разработка API (Еда)', variant: '№8' },
@@ -139,10 +136,11 @@ export const Views = {
         `;
     },
 
+    // --- ЛОГИН ---
     login: () => `
         <div class="login-container">
             <div class="login-card">
-                <svg style="display:block; margin:0 auto 1.5rem; color: var(--accent-color);" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                ${ICONS.user}
                 <h2>Вход для Администратора</h2>
                 <form onsubmit="window.handleLogin(event)">
                     <div class="form-group">
@@ -159,6 +157,7 @@ export const Views = {
         </div>
     `,
 
+    // --- АДМИНКА ---
     admin: async () => {
         // Проверка токена
         if (!api.token) {
@@ -166,14 +165,7 @@ export const Views = {
             return '';
         }
 
-        // Иконки (чистые SVG без инлайн стилей)
-        const ICONS = {
-            food: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line></svg>',
-            electronics: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line></svg>',
-            alcohol: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8a2 2 0 0 0 2-2v-9.4a1 1 0 0 0-.4-.8l-3.6-2.4V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2.4l-3.6 2.4a1 1 0 0 0-.4.8V19a2 2 0 0 0 2 2z"></path></svg>',
-            philosophy: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>'
-        };
-
+        // Экран выбора модуля
         if (location.hash === '#admin') {
             const keys = Object.keys(ADMIN_CONFIG);
             const menuItems = keys.map(k => `
@@ -226,12 +218,12 @@ export const Views = {
             <div class="admin-layout">
                 <div class="admin-sidebar">
                     <div class="admin-menu-header">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        ${ICONS.lock}
                         <span>Админка</span>
                     </div>
                     
                     <div class="admin-menu-btn" onclick="location.hash='#admin'">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect></svg>
+                        ${ICONS.grid}
                         <span>Обзор</span>
                     </div>
                     
@@ -243,7 +235,7 @@ export const Views = {
                     `).join('')}
 
                     <div class="admin-menu-btn logout" onclick="localStorage.removeItem('auth_token'); api.setToken(null); location.hash='#login'">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 20 21 8 3"></polyline><line x1="12" y1="1" x2="12" y2="23"></line></svg>
+                        ${ICONS.logout}
                         <span>Выйти</span>
                     </div>
                 </div>
