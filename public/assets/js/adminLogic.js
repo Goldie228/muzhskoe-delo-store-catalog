@@ -137,3 +137,20 @@ export const logoutAdmin = () => {
 };
 
 window.logoutAdmin = logoutAdmin;
+
+/**
+ * Глобальная функция для вызова из HTML (onclick)
+ * Обертка над AdminForm.open для удобства
+ */
+window.openEdit = async (id, moduleKey) => {
+    try {
+        const endpoint = ADMIN_CONFIG[moduleKey].endpoint;
+        // Получаем данные товара перед открытием формы
+        const res = await api.get(`${endpoint}/${id}`);
+        // Вызываем стандартную функцию открытия формы в режиме редактирования
+        AdminForm.open('edit', res.data, moduleKey);
+    } catch (error) {
+        console.error('Ошибка загрузки данных для редактирования:', error);
+        UI.toast('Ошибка: Не удалось загрузить данные', 'error');
+    }
+};
