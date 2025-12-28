@@ -211,10 +211,8 @@ export const Views = {
         const rows = items.map(item => `
             <tr>
                 <td style="font-family: monospace; color: #64748b;">${item.id}</td>
-                <td>
-                    <div style="font-weight: 500; color: var(--text-main);">${item.name || item.title}</div>
-                    <div style="font-size: 0.8rem; color: #94a3b8;">${item.price} BYN</div>
-                </td>
+                <td><strong>${item.name || item.title}</strong></td>
+                <td>${item.price} BYN</td>
                 <td>
                     <div style="display: flex; gap: 8px;">
                         <button class="action-btn btn-edit" onclick="AdminForm.open('edit', ${JSON.stringify(item)}, '${currentModule}')">Редактировать</button>
