@@ -1,0 +1,40 @@
+[
+  {
+    "id": "1",
+    "orderNumber": "ORD-12345678",
+    "customerName": "Иванов Иван",
+    "items": [
+      {
+        "productId": "1",
+        "productName": "Розетка электрическая Legrand Valena",
+        "quantity": 10,
+        "price": 450
+      }
+    ],
+    "totalAmount": 4500,
+    "status": "completed",
+    "orderDate": "2024-01-18T11:30:00.000Z"
+  },
+  {
+    "id": "2",
+    "orderNumber": "ORD-87654321",
+    "customerName": "Петров Петр",
+    "items": [
+      {
+        "productId": "2",
+        "productName": "Выключатель двухклавишный Schneider Electric",
+        "quantity": 5,
+        "price": 320
+      },
+      {
+        "productId": "3",
+        "productName": "Кабель ВВГ 3x2.5",
+        "quantity": 100,
+        "price": 85.5
+      }
+    ],
+    "totalAmount": 11150,
+    "status": "pending",
+    "orderDate": "2024-01-19T14:20:00.000Z"
+  }
+]

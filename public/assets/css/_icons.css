@@ -1,0 +1,32 @@
+
+/* Настройка SVG иконок (инлайн в HTML) */
+
+/* SVG тег в HTML */
+svg {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Размеры для главных иконок */
+.svg-icon-lg {
+    width: 48px;
+    height: 48px;
+}
+
+/* Админка: Меню (18px) */
+.admin-menu-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Админка: Хедер (24px) */
+.admin-menu-header svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Размер для логина */
+.login-card svg {
+    width: 64px;
+    height: 64px;
+}

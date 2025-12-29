@@ -1,0 +1,232 @@
+[
+  {
+    "id": "dish_001",
+    "name": "Стейк Рибай",
+    "price": 1250,
+    "inStock": true,
+    "addedAt": "2024-01-15T12:00:00.000Z",
+    "ingredients": [
+      "мясо",
+      "соль",
+      "перец",
+      "розмарин"
+    ]
+  },
+  {
+    "id": "dish_002",
+    "name": "Борщ украинский",
+    "price": 450,
+    "inStock": true,
+    "addedAt": "2024-01-16T12:00:00.000Z",
+    "ingredients": [
+      "свекла",
+      "капуста",
+      "говядина",
+      "сметана"
+    ]
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-23T19:28:02.430Z",
+    "id": "ea19d65a-8187-4a0e-b946-1bca7d7c5467",
+    "createdAt": "2025-12-23T19:28:02.431Z",
+    "updatedAt": "2025-12-23T19:28:02.431Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-23T19:28:51.197Z",
+    "id": "bc1781cd-7ded-4bc1-affc-043af37ca6c9",
+    "createdAt": "2025-12-23T19:28:51.198Z",
+    "updatedAt": "2025-12-23T19:28:51.198Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-23T19:29:45.527Z",
+    "id": "e4d5aede-5ada-4b40-b561-441ec1c048b5",
+    "createdAt": "2025-12-23T19:29:45.528Z",
+    "updatedAt": "2025-12-23T19:29:45.528Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-23T19:30:36.645Z",
+    "id": "309b87e1-5042-47ff-ab75-6f7fad815b6e",
+    "createdAt": "2025-12-23T19:30:36.647Z",
+    "updatedAt": "2025-12-23T19:30:36.647Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-23T19:53:24.582Z",
+    "id": "5ed7020a-884b-4415-8c64-9771d1803b9b",
+    "createdAt": "2025-12-23T19:53:24.584Z",
+    "updatedAt": "2025-12-23T19:53:24.584Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T07:16:24.768Z",
+    "id": "99a50f2c-0598-46ea-8471-325f624e658f",
+    "createdAt": "2025-12-24T07:16:24.769Z",
+    "updatedAt": "2025-12-24T07:16:24.769Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T07:17:44.305Z",
+    "id": "4a3e8c7c-561a-4864-8ec2-8c67c382b9e8",
+    "createdAt": "2025-12-24T07:17:44.307Z",
+    "updatedAt": "2025-12-24T07:17:44.307Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T07:22:55.790Z",
+    "id": "d12d900a-dfa1-435d-93af-8442bf0b5c0a",
+    "createdAt": "2025-12-24T07:22:55.791Z",
+    "updatedAt": "2025-12-24T07:22:55.791Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T07:23:03.899Z",
+    "id": "be7d5780-b8b2-4af2-91ba-a2bb8a325641",
+    "createdAt": "2025-12-24T07:23:03.900Z",
+    "updatedAt": "2025-12-24T07:23:03.900Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:30:05.653Z",
+    "id": "2ccd8fac-df77-47b5-9063-99b367ff1ba2",
+    "createdAt": "2025-12-24T13:30:05.655Z",
+    "updatedAt": "2025-12-24T13:30:05.655Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:33:55.606Z",
+    "id": "7da068d6-bb38-4ca5-9e35-fc9e910786cf",
+    "createdAt": "2025-12-24T13:33:55.608Z",
+    "updatedAt": "2025-12-24T13:33:55.608Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:35:08.211Z",
+    "id": "a27e3d23-eb64-442b-89ee-4653049bc136",
+    "createdAt": "2025-12-24T13:35:08.212Z",
+    "updatedAt": "2025-12-24T13:35:08.212Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:36:56.013Z",
+    "id": "8a716c67-a04a-484d-8be8-cae08f99b08c",
+    "createdAt": "2025-12-24T13:36:56.015Z",
+    "updatedAt": "2025-12-24T13:36:56.015Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:38:09.706Z",
+    "id": "918b43bf-0233-4c8a-87b5-1ed9459de43c",
+    "createdAt": "2025-12-24T13:38:09.707Z",
+    "updatedAt": "2025-12-24T13:38:09.707Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:42:08.788Z",
+    "id": "fed14d20-d6c1-4f6d-b609-2fdf3a1fc2ae",
+    "createdAt": "2025-12-24T13:42:08.790Z",
+    "updatedAt": "2025-12-24T13:42:08.790Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-24T13:43:49.020Z",
+    "id": "d9300c23-ee27-40e1-8d01-1bd6f83df084",
+    "createdAt": "2025-12-24T13:43:49.022Z",
+    "updatedAt": "2025-12-24T13:43:49.022Z"
+  },
+  {
+    "name": "Тестовое блюдо",
+    "price": 100,
+    "inStock": true,
+    "ingredients": [
+      "тест"
+    ],
+    "addedAt": "2025-12-26T09:04:42.333Z",
+    "id": "1f231889-eea0-4773-abd6-511b7a92fcdd",
+    "createdAt": "2025-12-26T09:04:42.334Z",
+    "updatedAt": "2025-12-26T09:04:42.334Z"
+  }
+]
