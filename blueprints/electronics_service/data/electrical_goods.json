@@ -1,0 +1,61 @@
+[
+  {
+    "id": "1",
+    "name": "Розетка электрическая Legrand Valena",
+    "category": "розетки",
+    "price": 450,
+    "voltage": 250,
+    "current": 16,
+    "isInStock": true,
+    "specifications": [
+      "IP20",
+      "белый",
+      "с заземлением"
+    ],
+    "createdAt": "2024-01-15T10:30:00.000Z"
+  },
+  {
+    "id": "2",
+    "name": "Выключатель двухклавишный Schneider Electric",
+    "category": "выключатели",
+    "price": 320,
+    "voltage": 250,
+    "current": 10,
+    "isInStock": true,
+    "specifications": [
+      "IP54",
+      "светодиодная подсветка",
+      "антивандальный"
+    ],
+    "createdAt": "2024-01-16T14:45:00.000Z"
+  },
+  {
+    "id": "3",
+    "name": "Кабель ВВГ 3x2.5",
+    "category": "провода",
+    "price": 85.5,
+    "voltage": 660,
+    "current": 25,
+    "isInStock": false,
+    "specifications": [
+      "медный",
+      "сечение 2.5 мм²",
+      "не распространяет горение"
+    ],
+    "createdAt": "2024-01-17T09:15:00.000Z"
+  },
+  {
+    "id": "1766946708125",
+    "name": "45",
+    "category": "4",
+    "price": 54,
+    "voltage": 45,
+    "current": 45,
+    "isInStock": true,
+    "specifications": [
+      "45"
+    ],
+    "createdAt": "2025-12-28T18:31:48.125Z",
+    "updatedAt": "2025-12-28T18:31:48.126Z"
+  }
+]
